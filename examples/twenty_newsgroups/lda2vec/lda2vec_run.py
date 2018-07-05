@@ -19,9 +19,9 @@ from lda2vec import utils
 from lda2vec import prepare_topics, print_top_words_per_topic, topic_coherence
 from lda2vec_model import LDA2Vec
 
-gpu_id = int(os.getenv('CUDA_GPU', 0))
-cuda.get_device(gpu_id).use()
-print("Using GPU " + str(gpu_id))
+# gpu_id = int(os.getenv('CUDA_GPU', 0))
+# cuda.get_device(gpu_id).use()
+# print("Using GPU " + str(gpu_id))
 
 data_dir = os.getenv('data_dir', '../data/')
 fn_vocab = '{data_dir:s}/vocab.pkl'.format(data_dir=data_dir)

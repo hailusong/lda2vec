@@ -66,7 +66,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     """
     if nlp is None:
         nlp = English()
-    data = np.zeros((len(texts), max_length), dtype='int32')
+    data = np.zeros((len(texts), max_length), dtype='uint64')
     data[:] = skip
     bad_deps = ('amod', 'compound')
     for row, doc in enumerate(nlp.pipe(texts, **kwargs)):
@@ -86,9 +86,9 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
                     if len(ent) > 1:
                         # Merge them into single tokens
                         ent.merge(ent.root.tag_, ent.text, ent.label_)
-        dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL]).astype('int32')
+        dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL]).astype('uint64')
         if len(dat) > 0:
-            dat = dat.astype('int32')
+            dat = dat.astype('uint64')
             msg = "Negative indices reserved for special tokens"
             assert dat.min() >= 0, msg
             # Replace email and URL tokens

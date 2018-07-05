@@ -86,9 +86,15 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
                     if len(ent) > 1:
                         # Merge them into single tokens
                         ent.merge(ent.root.tag_, ent.text, ent.label_)
-        dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL]).astype('uint64')
+
+        # Note that in spacy2 doc.to_array returns uint64
+        # However the lda2vec code needs negative hash# for special tokens such as
+        # -2 (skip).
+        # We need to cast the returned array to int64 and hope no negative hash#
+        # (otherwise it may conflicts with special token hash#)
+        dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL]).astype('int64')
         if len(dat) > 0:
-            dat = dat.astype('uint64')
+            dat = dat.astype('int64')
             msg = "Negative indices reserved for special tokens"
             assert dat.min() >= 0, msg
             # Replace email and URL tokens

@@ -64,6 +64,13 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     >>> arr[1, 1]  # The URL token is thrown out
     -2
     """
+    # Note that in spacy2 doc.to_array returns uint64.
+    # It is a littl bit tricky to reserve some spaces for special tokens
+    # such as <SKIP>.
+    # We will check the minimum hash# in doc.to_array() returns and make sure
+    # it is greater than the specified special token hash# to avoid conflict.
+    assert skip >= 0
+
     if nlp is None:
         nlp = English()
     data = np.zeros((len(texts), max_length), dtype='uint64')
@@ -87,16 +94,10 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
                         # Merge them into single tokens
                         ent.merge(ent.root.tag_, ent.text, ent.label_)
 
-        # Note that in spacy2 doc.to_array returns uint64
-        # However the lda2vec code needs negative hash# for special tokens such as
-        # -2 (skip).
-        # We need to cast the returned array to int64 and hope no negative hash#
-        # (otherwise it may conflicts with special token hash#)
-        dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL]).astype('int64')
+        dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
         if len(dat) > 0:
-            dat = dat.astype('int64')
-            msg = "Negative indices reserved for special tokens"
-            assert dat.min() >= 0, msg
+            msg = f"Hash# {skip} should be reserved for the special token"
+            assert dat.min() >= skip + 1, msg
             # Replace email and URL tokens
             idx = (dat[:, 1] > 0) | (dat[:, 2] > 0)
             dat[idx] = skip

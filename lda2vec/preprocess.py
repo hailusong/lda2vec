@@ -96,7 +96,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
 
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
         if len(dat) > 0:
-            msg = f"Hash# {skip} should be reserved for the special token"
+            msg = f'Hash# {skip} should be reserved for the special token'
             assert dat.min() >= skip + 1, msg
             # Replace email and URL tokens
             idx = (dat[:, 1] > 0) | (dat[:, 2] > 0)

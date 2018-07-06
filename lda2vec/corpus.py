@@ -57,8 +57,8 @@ class Corpus():
         """
         self.counts_loose = defaultdict(int)
         self._finalized = False
-        self.specials = dict(out_of_vocabulary=out_of_vocabulary,
-                             skip=skip)
+        self.specials = dict(out_of_vocabulary=np.uint64(out_of_vocabulary),
+                             skip=np.uint64(skip))
 
     @property
     def n_specials(self):
@@ -86,9 +86,11 @@ class Corpus():
         """
         self._check_unfinalized()
         uniques, counts = np.unique(np.ravel(loose_array), return_counts=True)
-        msg = "Loose arrays cannot have elements below the values of special "
+        msg = "Loose arrays cannot have elements above the values of special "
         msg += "tokens as these indices are reserved"
-        assert uniques.min() >= min(self.specials.values()), msg
+        # assert uniques.min() >= min(self.specials.values()), msg
+        assert uniques.max() <= min(self.specials.values()), msg
+
         for k, v in zip(uniques, counts):
             self.counts_loose[k] += v
 
@@ -96,14 +98,16 @@ class Corpus():
         """ Get the loose keys in order of decreasing frequency"""
         loose_counts = sorted(self.counts_loose.items(), key=lambda x: x[1],
                               reverse=True)
-        keys = np.array(loose_counts)[:, 0]
-        counts = np.array(loose_counts)[:, 1]
-        order = np.argsort(counts)[::-1].astype('int32')
+        keys = np.array(loose_counts)[:, 0].astype(np.uint64)
+        counts = np.array(loose_counts)[:, 1].astype(np.uint64)
+        # order = np.argsort(counts)[::-1].astype('int32')
+        order = np.argsort(counts)[::-1].astype(np.uint64)
         keys, counts = keys[order], counts[order]
         # Add in the specials as a prefix to the other keys
-        specials = np.sort(self.specials.values())
+        specials = np.sort(list(self.specials.values()))
         keys = np.concatenate((specials, keys))
-        empty = np.zeros(len(specials), dtype='int32')
+        # empty = np.zeros(len(specials), dtype='int32')
+        empty = np.zeros(len(specials), dtype=np.uint64)
         counts = np.concatenate((empty, counts))
         n_keys = keys.shape[0]
         assert counts.min() >= 0
@@ -336,7 +340,7 @@ class Corpus():
         oov_token = self.specials_to_compact['out_of_vocabulary']
         keys = np.concatenate((keys, oov))
         reps = np.concatenate((reps, np.zeros_like(oov) + oov_token))
-        compact = fast_replace(word_loose, keys, reps)
+        compact = fast_replace(word_loose, keys, reps, datatype=np.uint64)
         msg = "Error: all compact indices should be non-negative"
         assert compact.min() >= 0, msg
         return compact
@@ -618,10 +622,14 @@ class Corpus():
         (2, 6)
         """
         if max_compact_index is None:
-            max_compact_index = word_compact.max()
+            max_compact_index = word_compact.max().astype(np.int64)
 
         def bincount(x):
-            return np.bincount(x, minlength=max_compact_index + 1)
+            x = x.astype(np.int64, casting='unsafe')
+            bincnts = np.bincount(x, minlength=max_compact_index + 1)
+            # bincnts_u64 = bincnts.astype(np.uint64)
+            return bincnts
+
         axis = len(word_compact.shape) - 1
         bow = np.apply_along_axis(bincount, axis, word_compact)
         return bow
@@ -703,7 +711,7 @@ class Corpus():
         return counts
 
 
-def fast_replace(data, keys, values, skip_checks=False):
+def fast_replace(data, keys, values, skip_checks=False, datatype=None):
     """ Do a search-and-replace in array `data`.
 
     Arguments
@@ -730,4 +738,8 @@ def fast_replace(data, keys, values, skip_checks=False):
     keys, values = keys[sdx], values[sdx]
     idx = np.digitize(data, keys, right=True)
     new_data = values[idx]
-    return new_data
+
+    if datatype is not None:
+        return new_data.astype(datatype)
+    else:
+        return new_data

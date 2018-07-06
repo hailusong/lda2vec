@@ -67,9 +67,11 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     # Note that in spacy2 doc.to_array returns uint64.
     # It is a littl bit tricky to reserve some spaces for special tokens
     # such as <SKIP>.
-    # We will check the minimum hash# in doc.to_array() returns and make sure
-    # it is greater than the specified special token hash# to avoid conflict.
-    assert skip >= 0
+    # We will check the hash# range in doc.to_array() returns and make sure
+    # it won't conflict with the specified special token hash#.
+    assert skip < 0
+    skip_uint64 = np.uint64(skip)
+    print('Special token {} is converted to uint64 {}'.format(skip, skip_uint64))
 
     if nlp is None:
         nlp = English()
@@ -96,16 +98,21 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
 
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
         if len(dat) > 0:
-            msg = f'Hash# {skip} should be reserved for the special token'
-            assert dat.min() >= skip + 1, msg
+            dat_max_hash = dat.max()
+            print('Max hash# detected is {}'.format(dat_max_hash))
+
+            msg = 'Hash# {} should be reserved for the special token'.format(skip_uint64)
+            assert dat.max() < skip_uint64, msg
+
             # Replace email and URL tokens
             idx = (dat[:, 1] > 0) | (dat[:, 2] > 0)
-            dat[idx] = skip
+            dat[idx] = skip_uint64
             length = min(len(dat), max_length)
             data[row, :length] = dat[:length, 0].ravel()
+
     uniques = np.unique(data)
-    vocab = {v: nlp.vocab[v].lower_ for v in uniques if v != skip}
-    vocab[skip] = '<SKIP>'
+    vocab = {v: nlp.vocab[v].lower_ for v in uniques if v != skip_uint64}
+    vocab[skip_uint64] = '<SKIP>'
     return data, vocab
 
 

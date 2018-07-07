@@ -29,8 +29,8 @@ fn_corpus = '{data_dir:s}/corpus.pkl'.format(data_dir=data_dir)
 fn_flatnd = '{data_dir:s}/flattened.npy'.format(data_dir=data_dir)
 fn_docids = '{data_dir:s}/doc_ids.npy'.format(data_dir=data_dir)
 fn_vectors = '{data_dir:s}/vectors.npy'.format(data_dir=data_dir)
-vocab = pickle.load(open(fn_vocab, 'r'))
-corpus = pickle.load(open(fn_corpus, 'r'))
+vocab = pickle.load(open(fn_vocab, 'rb'))
+corpus = pickle.load(open(fn_corpus, 'rb'))
 flattened = np.load(fn_flatnd)
 doc_ids = np.load(fn_docids)
 vectors = np.load(fn_vectors)
@@ -77,7 +77,7 @@ if os.path.exists('lda2vec.hdf5'):
     serializers.load_hdf5("lda2vec.hdf5", model)
 if pretrained:
     model.sampler.W.data[:, :] = vectors[:n_vocab, :]
-model.to_gpu()
+model.to_cpu()
 optimizer = O.Adam()
 optimizer.setup(model)
 clip = chainer.optimizer.GradientClipping(5.0)
@@ -104,7 +104,8 @@ for epoch in range(200):
     np.savez('topics.pyldavis', **data)
     for d, f in utils.chunks(batchsize, doc_ids, flattened):
         t0 = time.time()
-        optimizer.zero_grads()
+        # optimizer.zero_grads()
+        model.cleargrads()
         l = model.fit_partial(d.copy(), f.copy())
         prior = model.prior()
         loss = prior * fraction

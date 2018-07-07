@@ -1,8 +1,9 @@
 from spacy.lang.en import English
 from spacy.attrs import LOWER, LIKE_URL, LIKE_EMAIL
-
 import numpy as np
 
+import logging
+logger = logging.getLogger(__name__)
 
 def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
              **kwargs):
@@ -71,7 +72,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     # it won't conflict with the specified special token hash#.
     assert skip < 0
     skip_uint64 = np.uint64(skip)
-    print('Special token {} is converted to uint64 {}'.format(skip, skip_uint64))
+    logger.info('Special token {} is converted to uint64 {}'.format(skip, skip_uint64))
 
     if nlp is None:
         nlp = English()
@@ -99,7 +100,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
         if len(dat) > 0:
             dat_max_hash = dat.max()
-            print('Max hash# detected is {}'.format(dat_max_hash))
+            logger.info('Max hash# detected is {}'.format(dat_max_hash))
 
             msg = 'Hash# {} should be reserved for the special token'.format(skip_uint64)
             assert dat.max() < skip_uint64, msg

@@ -164,10 +164,15 @@ class Corpus():
         # so that the counts arrays is already in compact order
         self.keys_loose, self.keys_counts, n_keys = self._loose_keys_ordered()
         self.keys_compact = np.arange(n_keys).astype('int32')
+
+        # word long hash# -> word compact index (sequential index)
         self.loose_to_compact = {l: c for l, c in
                                  zip(self.keys_loose, self.keys_compact)}
+
+        # word compact index (sequential index) -> word long hash#
         self.compact_to_loose = {c: l for l, c in
                                  self.loose_to_compact.items()}
+
         self.specials_to_compact = {s: self.loose_to_compact[i]
                                     for s, i in self.specials.items()}
         self.compact_to_special = {c: s for c, s in
@@ -482,7 +487,11 @@ class Corpus():
         words = []
         if max_compact_index is None:
             max_compact_index = self.keys_compact.shape[0]
+
+        # index_to_special is a dict, from long hash# to special words like
+        # 'skip' and 'out_of_vocabulary'
         index_to_special = {i: s for s, i in self.specials.items()}
+
         for compact_index in range(max_compact_index):
             loose_index = self.compact_to_loose.get(compact_index, oov)
             special = index_to_special.get(loose_index, oov_token)

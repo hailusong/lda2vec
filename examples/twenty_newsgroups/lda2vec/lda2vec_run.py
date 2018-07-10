@@ -88,6 +88,12 @@ epoch = 0
 fraction = batchsize * 1.0 / flattened.shape[0]
 progress = shelve.open('progress.shelve')
 for epoch in range(200):
+    # After the first execution of the statement below, data.keys() =>
+    # dict_keys(['vocab', 'doc_lengths', 'doc_topic_dists', 'topic_term_dists', 'term_frequency']
+    #
+    # Also the data['vocab'] is mostly <OoV>
+    # (Pdb) print(sum(x != '<OoV>' for x in data['vocab']), 'out of', len(data['vocab']), ' is NOT <OoV>')
+    # 27 out of 5835  is NOT <OoV>
     data = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
                           cuda.to_cpu(model.mixture.factors.W.data).copy(),
                           cuda.to_cpu(model.sampler.W.data).copy(),

@@ -42,19 +42,30 @@ n_docs = doc_ids.max() + 1
 n_vocab = flattened.max() + 1
 # 'Strength' of the dircihlet prior; 200.0 seems to work well
 clambda = 200.0
+
 # Number of topics to fit
 n_topics = int(os.getenv('n_topics', 20))
 batchsize = 4096
+
 # Power for neg sampling
 power = float(os.getenv('power', 0.75))
+
 # Intialize with pretrained word vectors
 pretrained = bool(int(os.getenv('pretrained', True)))
+
 # Sampling temperature
 temperature = float(os.getenv('temperature', 1.0))
+
 # Number of dimensions in a single word vector
 n_units = int(os.getenv('n_units', 300))
+
 # Get the string representation for every compact key
+# Inputs:
+# vocab: dict from word long hash# (from Spacy) -> word string
+# Outputs:
+# words: dict from word compact index -> word string
 words = corpus.word_list(vocab)[:n_vocab]
+
 # How many tokens are in each document
 doc_idx, lengths = np.unique(doc_ids, return_counts=True)
 doc_lengths = np.zeros(doc_ids.max() + 1, dtype='int32')

@@ -19,9 +19,12 @@ from lda2vec import utils
 from lda2vec import prepare_topics, print_top_words_per_topic, topic_coherence
 from lda2vec_model import LDA2Vec
 
-# gpu_id = int(os.getenv('CUDA_GPU', 0))
-# cuda.get_device(gpu_id).use()
-# print("Using GPU " + str(gpu_id))
+gpu_id = int(os.getenv('CUDA_GPU', -1))
+if gpu_id >= 0:
+    cuda.get_device(gpu_id).use()
+    print("Using GPU " + str(gpu_id))
+else:
+    print("using CPU as environment variable CUDA_GPU is not defined")
 
 data_dir = os.getenv('data_dir', '../data/')
 fn_vocab = '{data_dir:s}/vocab.pkl'.format(data_dir=data_dir)
@@ -86,9 +89,15 @@ model = LDA2Vec(n_documents=n_docs, n_document_topics=n_topics,
 if os.path.exists('lda2vec.hdf5'):
     print("Reloading from saved")
     serializers.load_hdf5("lda2vec.hdf5", model)
+
 if pretrained:
     model.sampler.W.data[:, :] = vectors[:n_vocab, :]
-model.to_cpu()
+
+if gpu_id >= 0:
+    model.to_gpu()
+else:
+    model.to_cpu()
+
 optimizer = O.Adam()
 optimizer.setup(model)
 clip = chainer.optimizer.GradientClipping(5.0)
@@ -105,10 +114,17 @@ for epoch in range(200):
     # Also the data['vocab'] is mostly <OoV>
     # (Pdb) print(sum(x != '<OoV>' for x in data['vocab']), 'out of', len(data['vocab']), ' is NOT <OoV>')
     # 27 out of 5835  is NOT <OoV>
-    data = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
-                          cuda.to_cpu(model.mixture.factors.W.data).copy(),
-                          cuda.to_cpu(model.sampler.W.data).copy(),
-                          words)
+    if gpu_id >= 0:
+        data = prepare_topics(cuda.to_gpu(model.mixture.weights.W.data).copy(),
+                              cuda.to_gpu(model.mixture.factors.W.data).copy(),
+                              cuda.to_gpu(model.sampler.W.data).copy(),
+                              words)
+    else:
+        data = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
+                              cuda.to_cpu(model.mixture.factors.W.data).copy(),
+                              cuda.to_cpu(model.sampler.W.data).copy(),
+                              words)
+
     top_words = print_top_words_per_topic(data)
     if j % 100 == 0 and j > 100:
         coherence = topic_coherence(top_words)
@@ -130,8 +146,14 @@ for epoch in range(200):
         optimizer.update()
         msg = ("J:{j:05d} E:{epoch:05d} L:{loss:1.3e} "
                "P:{prior:1.3e} R:{rate:1.3e}")
-        prior.to_cpu()
-        loss.to_cpu()
+
+        if gpu_id >= 0:
+            prior.to_gpu()
+            loss.to_gpu()
+        else:
+            prior.to_cpu()
+            loss.to_cpu()
+
         t1 = time.time()
         dt = t1 - t0
         rate = batchsize / dt

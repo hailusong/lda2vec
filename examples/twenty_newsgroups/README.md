@@ -1,4 +1,4 @@
-There are a variety of LDA-inspired models in this directory. 
+There are a variety of LDA-inspired models in this directory.
 
 Warning: Not all of these models are working at the moment.
 
@@ -15,7 +15,13 @@ Like the above, but predicts individual words instead of a BoW representation pr
 
 lda2vec
 -------
-This model adds in skipgrams. A word predicts another word in the same window, as in word2vec, but also has the notion of a context vector which only changes at the document level as in LDA. 
+This model adds in skipgrams. A word predicts another word in the same window, as in word2vec, but also has the notion of a context vector which only changes at the document level as in LDA.
+To run lda2vec,
+1. [Download data](https://gitlab.com/hailusong/ai-frameworks/tree/master/fast.ai.2018)
+  - GoogleNews-vectors-negative300.bin
+  - Spacy en model
+2. Run data/preprocess.py
+3. Run lda2vec/lda2vec_run.py
 
 nvdm
 ----

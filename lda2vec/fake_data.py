@@ -69,5 +69,5 @@ def fake_data(n_docs, n_words, n_sent_length, n_topics):
     for doc_to_wrd in doc_to_wrds:
         words = sample(indices, doc_to_wrd, n_sent_length)
         sentences.append(words)
-    sentences = np.array(sentences)
-    return sentences.astype('int32')
+
+    return np.array(sentences, dtype=np.int32)

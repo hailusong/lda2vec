@@ -104,10 +104,10 @@ class Corpus():
         """ Get the loose keys in order of decreasing frequency"""
         loose_counts = sorted(self.counts_loose.items(), key=lambda x: x[1],
                               reverse=True)
-        keys = np.array(loose_counts)[:, 0].astype(np.uint64)
-        counts = np.array(loose_counts)[:, 1].astype(np.uint64)
+        keys = np.array(loose_counts, dtype=np.uint64)[:, 0]
+        counts = np.array(loose_counts, dtype=np.uint64)[:, 1]
         # order = np.argsort(counts)[::-1].astype('int32')
-        order = np.argsort(counts)[::-1].astype(np.uint64)
+        order = np.argsort(counts)[::-1]
         keys, counts = keys[order], counts[order]
         # Add in the specials as a prefix to the other keys
         specials = np.sort(list(self.specials.values()))
@@ -492,6 +492,8 @@ class Corpus():
         # 'skip' and 'out_of_vocabulary'
         index_to_special = {i: s for s, i in self.specials.items()}
 
+        # Note that the first two words [:2] in the vocab are special items:
+        # 'skip', 'out-of-vocabulary'
         for compact_index in range(max_compact_index):
             loose_index = self.compact_to_loose.get(compact_index, oov)
             special = index_to_special.get(loose_index, oov_token)
@@ -505,6 +507,8 @@ class Corpus():
         The returned word array has row indices corresponding to the
         compact index of a word, and columns correponding to the word
         vector.
+        This is called by data/preprocess.py to map our corpus vocabulary to
+        GoogleNews-based vector data.
 
         Arguments
         ---------
@@ -569,43 +573,80 @@ class Corpus():
         if array is not None:
             data = array
             n_words = data.shape[0]
+
+        # model.vocab is vocabulary of loaded GoogleNews word2vec data.
+        # Extract word strings of the GoogleNews vocabulary.
         keys_raw = model.vocab.keys()
+
         # keys = [s.encode('ascii', 'ignore') for s in keys_raw]
         keys = [s for s in keys_raw]
+
+        # Extract word string length of each word in the GoogleNews vocabulary.
         lens = [len(s) for s in model.vocab.keys()]
+
         # choices = np.array(keys, dtype='S')
         choices = np.array(keys)
         lengths = np.array(lens, dtype='int32')
         s, f = 0, 0
+
+        # Some clean-up rules
         rep0 = lambda w: w
         rep1 = lambda w: w.replace(' ', '_')
         rep2 = lambda w: w.title().replace(' ', '_')
         reps = [rep0, rep1, rep2]
+
+        # We only keep the first top# words in corpus, in the desc-order of
+        # term-frequency.
         for compact in np.arange(top):
+            # skipping those compact# not associated with long hash#, or
+            # those long hash# not associated with any word in the our corpus vocabulary.
+            # normally this should not happen.
             loose = self.compact_to_loose.get(compact, None)
             if loose is None:
+                print('ATTN: skipping compact# {} because cannot find long hash#'.format(compact))
                 continue
             word = vocab.get(loose, None)
             if word is None:
+                print('ATTN: skipping long hash# {} because cannot find word in corpus vocab'.format(loose))
                 continue
+
             word = word.strip()
             vector = None
+            # Try all clean-up rules to see if we can find the word in
+            # GoogleNews word2vec vocabalary
             for rep in reps:
                 clean = rep(word)
+                # note that  model is gensim model loaded from GoogleNews word2vec data.
+                # model.vocab is the vocabulary of GoogleNews word2vec vocabulary.
                 if clean in model.vocab:
                     vector = model[clean]
                     break
+
+            # Cannot find one word from our corpus vocabulary in GoogleNews
+            # corpus vocabulary? This may happen because of resons like typo.
+            # To recover as much as possible, we search for the similiar words
+            # in GoogleNews vocabulary using our word (similiarity is mesured
+            # in damerau_levenshtein_distance).
             if vector is None:
                 try:
                     # not required in Python3
                     # word = unicode(word)
+
+                    # select all words in the GoogleNews vocabulary that
+                    # word-len between [our-word-len - 3, our-word-len +3]
                     idx = lengths >= len(word) - 3
                     idx &= lengths <= len(word) + 3
                     sel = choices[idx]
+
+                    # calculate distance between our word and all selected words
+                    # in the GoogleNews vocabulary.
                     # d = damerau_levenshtein_distance_withNPArray(word, sel)
                     # choice = np.array(keys_raw)[idx][np.argmin(d)]
                     d = damerau_levenshtein_distance_ndarray(word, sel)
+
+                    # pick the nearest word
                     choice = np.array(keys)[idx][np.argmin(d)]
+
                     # choice = difflib.get_close_matches(word, choices)[0]
                     vector = model[choice]
                     print(compact, word, ' --> ', choice)

@@ -22,6 +22,7 @@ To run lda2vec,
   - Spacy en model
 2. Run data/preprocess.py
 3. Run lda2vec/lda2vec_run.py
+  - To run in GPU, set GPU id by 'export CUDA_GPU=<devid>'
 
 nvdm
 ----

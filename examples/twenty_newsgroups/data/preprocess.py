@@ -3,15 +3,12 @@
 
 # This simple example loads the newsgroups data from sklearn
 # and train an LDA-like model on it
-import logging
 import pickle
-
 from sklearn.datasets import fetch_20newsgroups
 import numpy as np
-
 from lda2vec import preprocess, Corpus
+from lda2vec.logging import logger
 
-logging.basicConfig()
 
 # Fetch data
 remove = ('headers', 'footers', 'quotes')
@@ -39,16 +36,16 @@ corpus.finalize()
 # between indices for words that aren't present in our dataset.
 # This builds a new compact index
 compact = corpus.to_compact(tokens)
-logging.info('compact inspection: ', compact.max(), compact.min(), compact.dtype)
+logger.info('compact inspection: {},{},{}'.format(compact.max(), compact.min(), compact.dtype))
 
 # Remove extremely rare words
 pruned = corpus.filter_count(compact, min_count=30)
-logging.info('pruned inspection: ', pruned.max(), pruned.min(), pruned.dtype)
+logger.info('pruned inspection: {},{},{}'.format(pruned.max(), pruned.min(), pruned.dtype))
 pruned = pruned.astype(np.int64, casting='unsafe')
 
 # Convert the compactified arrays into bag of words arrays
 bow = corpus.compact_to_bow(pruned)
-logging.info('bow inspection: ', bow.max(), bow.min(), bow.dtype)
+logger.info('bow inspection: {},{},{}'.format(bow.max(), bow.min(), bow.dtype))
 
 # Words tend to have power law frequency, so selectively
 # downsample the most prevalent words

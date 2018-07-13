@@ -2,10 +2,8 @@ from collections import defaultdict
 import numpy as np
 import difflib
 import pandas as pd
+from lda2vec.logging import logger
 
-# create logger
-import logging
-logger = logging.getLogger(__name__)
 
 # try:
     # from pyxdameraulevenshtein import damerau_levenshtein_distance_withNPArray
@@ -88,7 +86,7 @@ class Corpus():
         >>> corpus.counts_loose[9]
         1
         """
-        logger.info('Updating corpus word counts on word indics data ', loose_array.shape)
+        logger.info('Updating corpus word counts on word indics data {}'.format(loose_array.shape))
 
         self._check_unfinalized()
         uniques, counts = np.unique(np.ravel(loose_array), return_counts=True)
@@ -98,7 +96,11 @@ class Corpus():
         assert uniques.max() <= min(self.specials.values()), msg
 
         for k, v in zip(uniques, counts):
-            self.counts_loose[k] += v
+            if k != self.specials['skip']:
+                self.counts_loose[k] += v
+            else:
+                logger.info('Skipping word count of spcial item {}'.format(v))
+
 
     def _loose_keys_ordered(self):
         """ Get the loose keys in order of decreasing frequency"""
@@ -106,18 +108,33 @@ class Corpus():
                               reverse=True)
         keys = np.array(loose_counts, dtype=np.uint64)[:, 0]
         counts = np.array(loose_counts, dtype=np.uint64)[:, 1]
+
+        # (Pdb) order[:10] - order.dtype is np.int64
+        # array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
         # order = np.argsort(counts)[::-1].astype('int32')
         order = np.argsort(counts)[::-1]
         keys, counts = keys[order], counts[order]
+
+        # debug
+        # (Pdb) keys[:3] - first and third are all <SKIP> - double now
+        # That is because in preprocess.py the code already converted
+        # some special tokens like e-mails, URLs to <SKIP>
+        # array([18446744073709551614, 18446744073709551615, 18446744073709551614], dtype=uint64)
+        # (Pdb) counts[:6]
+        # array([        0,         0, 110547380,    105430,    103758,    100329], dtype=uint64)
+
         # Add in the specials as a prefix to the other keys
         specials = np.sort(list(self.specials.values()))
         keys = np.concatenate((specials, keys))
+
         # empty = np.zeros(len(specials), dtype='int32')
         empty = np.zeros(len(specials), dtype=np.uint64)
         counts = np.concatenate((empty, counts))
+
         n_keys = keys.shape[0]
         assert counts.min() >= 0
         return keys, counts, n_keys
+
 
     def finalize(self):
         """ Call `finalize` once done updating word counts. This means the
@@ -561,7 +578,7 @@ class Corpus():
         # model = Word2Vec.load_word2vec_format(filename, binary=True)
         from gensim.models import KeyedVectors
         # load with # C binary format
-        logger.info('Loading word2vec data from ', filename)
+        logger.info('Loading word2vec data from {}'.format(filename))
         model = KeyedVectors.load_word2vec_format(filename, binary=True)
 
         n_dim = model.syn0.shape[1]

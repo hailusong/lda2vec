@@ -1,9 +1,8 @@
 from spacy.lang.en import English
 from spacy.attrs import LOWER, LIKE_URL, LIKE_EMAIL
 import numpy as np
+from lda2vec.logging import logger
 
-import logging
-logger = logging.getLogger(__name__)
 
 def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
              **kwargs):
@@ -77,7 +76,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     if nlp is None:
         nlp = English()
     data = np.zeros((len(texts), max_length), dtype='uint64')
-    data[:] = skip
+    data[:] = skip_uint64
     bad_deps = ('amod', 'compound')
     for row, doc in enumerate(nlp.pipe(texts, **kwargs)):
         if merge:
@@ -97,15 +96,19 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
                         # Merge them into single tokens
                         ent.merge(ent.root.tag_, ent.text, ent.label_)
 
+        # Spacy to output 2d array [:,3]
+        # First column is LEMMA, as specified in attr
+        # Second column is LIKE_EMAIL: yes/no, true/false
+        # Third column is LIKE_URL: yes/no, true/false
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
         if len(dat) > 0:
             dat_max_hash = dat.max()
-            logger.info('Max hash# detected is {}'.format(dat_max_hash))
+            # logger.info('Max hash# detected is {}'.format(dat_max_hash))
 
             msg = 'Hash# {} should be reserved for the special token'.format(skip_uint64)
             assert dat.max() < skip_uint64, msg
 
-            # Replace email and URL tokens
+            # Replace email and URL tokens with '<SKIP>' special token
             idx = (dat[:, 1] > 0) | (dat[:, 2] > 0)
             dat[idx] = skip_uint64
             length = min(len(dat), max_length)
@@ -114,6 +117,8 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     uniques = np.unique(data)
     vocab = {v: nlp.vocab[v].lower_ for v in uniques if v != skip_uint64}
     vocab[skip_uint64] = '<SKIP>'
+
+    # data -> tokens in preprocess.py
     return data, vocab
 
 

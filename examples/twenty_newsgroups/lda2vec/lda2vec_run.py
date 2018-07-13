@@ -132,9 +132,11 @@ for epoch in range(200):
             print(j, coherence[(j, 'cv')])
         kw = dict(top_words=top_words, coherence=coherence, epoch=epoch)
         progress[str(epoch)] = pickle.dumps(kw)
+
     data['doc_lengths'] = doc_lengths
     data['term_frequency'] = term_frequency
     np.savez('topics.pyldavis', **data)
+
     for d, f in utils.chunks(batchsize, doc_ids, flattened):
         t0 = time.time()
         # optimizer.zero_grads()
@@ -161,4 +163,5 @@ for epoch in range(200):
                     prior=float(prior.data), rate=rate)
         print(msg.format(**logs))
         j += 1
+
     serializers.save_hdf5("lda2vec.hdf5", model)

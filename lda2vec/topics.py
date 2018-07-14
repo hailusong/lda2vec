@@ -66,14 +66,34 @@ def prepare_topics(weights, factors, word_vectors, vocab, temperature=1.0,
     assert len(vocab) == word_vectors.shape[0], msg
     if normalize:
         word_vectors /= np.linalg.norm(word_vectors, axis=1)[:, None]
+
+    # --------------------------------------------------------------
     # factors = factors / np.linalg.norm(factors, axis=1)[:, None]
+    # --------------------------------------------------------------
+    # (Pdb) factor_to_word
+    # array([3.0697556e-04, 9.8935806e-04, 3.0454597e-04, ..., 7.4080403e-05,
+    #   1.6061513e-04, 2.0046759e-04], dtype=float32)
+    # (Pdb) factor_to_word.shape
+    # (5837, )
+    # (Pdb) factors.shape - 20 topics, 300 embedding dimensions
+    # (20, 300)
     for factor_vector in factors:
         factor_to_word = prob_words(factor_vector, word_vectors,
                                     temperature=temperature)
         topic_to_word.append(np.ravel(factor_to_word))
+
+    # Before >>>
+    # (Pdb) len(topic_to_word) -> 20
+    # (Pdb) topic_to_word[0].shape -> (5837, )
+    # (Pdb) topic_to_word.dtype -> dtype('float32')
     topic_to_word = np.array(topic_to_word)
+    # After >>>
+    # (Pdb) topic_to_word.shape
+    # (20, 5837)
+
     msg = "Not all rows in topic_to_word sum to 1"
     assert np.allclose(np.sum(topic_to_word, axis=1), 1), msg
+
     # Collect document-to-topic distributions, e.g. theta
     doc_to_topic = _softmax_2d(weights)
     msg = "Not all rows in doc_to_topic sum to 1"
@@ -97,6 +117,9 @@ def print_top_words_per_topic(data, top_n=10, do_print=True):
     """
     msgs = []
     lists = []
+
+    # (Pdb) topic_to_word.shape -> (5837, )
+    # (Pdb) topic_to_word.dtype -> float32
     for j, topic_to_word in enumerate(data['topic_term_dists']):
         top = np.argsort(topic_to_word)[::-1][:top_n]
         prefix = "Top words in topic %i " % j
@@ -105,6 +128,7 @@ def print_top_words_per_topic(data, top_n=10, do_print=True):
         if do_print:
             print(prefix + msg)
         lists.append(top_words)
+
     return lists
 
 

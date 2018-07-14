@@ -114,6 +114,12 @@ for epoch in range(200):
     # Also the data['vocab'] is mostly <OoV>
     # (Pdb) print(sum(x != '<OoV>' for x in data['vocab']), 'out of', len(data['vocab']), ' is NOT <OoV>')
     # 27 out of 5835  is NOT <OoV>
+    #
+    # Debug>>>
+    # (Pdb) model.mixture.weights.W.data.shape -> (11314, 20) (weights)
+    # (Pdb) model.mixture.factors.W.data.shape -> (20, 300) (factors -> factor_vector)
+    # (Pdb) model.sampler.W.data.shape -> (5837, 300) (word_vectors)
+    # (Pdb) len(words) -> 5837 (vocab)
     if gpu_id >= 0:
         data = prepare_topics(cuda.to_gpu(model.mixture.weights.W.data).copy(),
                               cuda.to_gpu(model.mixture.factors.W.data).copy(),
@@ -126,6 +132,7 @@ for epoch in range(200):
                               words)
 
     top_words = print_top_words_per_topic(data)
+
     if j % 100 == 0 and j > 100:
         coherence = topic_coherence(top_words)
         for j in range(n_topics):
@@ -139,8 +146,10 @@ for epoch in range(200):
 
     for d, f in utils.chunks(batchsize, doc_ids, flattened):
         t0 = time.time()
+
         # optimizer.zero_grads()
         model.cleargrads()
+
         l = model.fit_partial(d.copy(), f.copy())
         prior = model.prior()
         loss = prior * fraction
@@ -163,5 +172,12 @@ for epoch in range(200):
                     prior=float(prior.data), rate=rate)
         print(msg.format(**logs))
         j += 1
+
+        if j % 3 == 0:
+            snapshot = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
+                                 cuda.to_cpu(model.mixture.factors.W.data).copy(),
+                                 cuda.to_cpu(model.sampler.W.data).copy(),
+                                 words)
+            print_top_words_per_topic(snapshot)
 
     serializers.save_hdf5("lda2vec.hdf5", model)

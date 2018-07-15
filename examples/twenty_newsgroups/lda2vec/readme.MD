@@ -2,6 +2,7 @@
 _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Link.html#chainer.Link)_<br>
 - [optimizer.update()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Optimizer.html#chainer.Optimizer)
 - [Variable loss.backward()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Variable.html?highlight=backward#chainer.Variable.backward)
+  * <b>retain_grad</b>: In most cases of training some models, the purpose of backprop is to compute gradients of parameters, not of all variables, and therefore it is recommended to set this flag <b>False</b>
 
 ## Static Analysis
 ### Topic matrix

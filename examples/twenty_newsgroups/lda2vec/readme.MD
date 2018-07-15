@@ -60,12 +60,34 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
   | - | - | - |
   | embed_mixture.py:__call__ | self.proportions(doc_ids, softmax=True) | sums to 100% and indicates the topic proportions of a single document |
 
+### Target word
+
+1. Flow:
+
+  | Module | From ... To ... | Notes |
+  | - | - | - |
+  | lda2vec_model.py:fit_partial |  _see below__ |  |
+
+  ```
+  targetidx = rword_indices[start + frame: end + frame]
+  doc_at_target = rdoc_ids[start + frame: end + frame]
+  doc_is_same = doc_at_target == doc_at_pivot
+  rand = np.random.uniform(0, 1, doc_is_same.shape[0])
+  mask = (rand > self.word_dropout_ratio).astype('bool')
+  weight = np.logical_and(doc_is_same, mask).astype('int32')
+  # If weight is 1.0 then targetidx
+  # If weight is 0.0 then -1
+  targetidx = targetidx * weight + -1 * (1 - weight)
+  target, = move(self.xp, targetidx)
+  ```
+
 ## Model Analysis
 
 | Module | Input #1 | Input #2 | Op | Output | Notes |
 | - | - | - | - | - | - |
 | lda2vec_model.py:fit_partial | **Word vector**<br>F.dropout(pivot, self.dropout_ratio) | **Document vector**<br>F.dropout(doc, self.dropout_ratio) | + | Context vector - **context** | |
 | embed_mixture.py:__call__ | **Document proportion** | **Topic matrix** | F.matmul | Document vector | |
+| lda2vec_model.py:fit_partial | **Context vector** | **Target word** | [L.NegativeSampling](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.NegativeSampling.html?highlight=negativesampling) | |
 
 ## Diagram
 ![img](/lda2vec_network_publish_text.gif)

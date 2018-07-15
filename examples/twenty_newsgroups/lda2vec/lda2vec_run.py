@@ -153,7 +153,6 @@ for epoch in range(200):
         model.cleargrads()
 
         l = model.fit_partial(d.copy(), f.copy())
-        optimizer.update()
 
         prior = model.prior()
         loss = prior * fraction

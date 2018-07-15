@@ -40,6 +40,7 @@ class LDA2Vec(Chain):
         pivot = F.embed_id(pivot_idx, self.sampler.W)
         if update_only_docs:
             pivot.unchain_backward()
+
         doc_at_pivot = rdoc_ids[window: -window]
         doc = self.mixture(next(move(self.xp, doc_at_pivot)),
                            update_only_docs=update_only_docs)
@@ -61,12 +62,15 @@ class LDA2Vec(Chain):
             rand = np.random.uniform(0, 1, doc_is_same.shape[0])
             mask = (rand > self.word_dropout_ratio).astype('bool')
             weight = np.logical_and(doc_is_same, mask).astype('int32')
+
             # If weight is 1.0 then targetidx
             # If weight is 0.0 then -1
             targetidx = targetidx * weight + -1 * (1 - weight)
             target, = move(self.xp, targetidx)
+
             loss = self.sampler(context, target)
             loss.backward()
+
             if update_only_docs:
                 # Wipe out any gradient accumulation on word vectors
                 self.sampler.W.grad *= 0.0

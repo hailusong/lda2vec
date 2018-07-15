@@ -2,60 +2,60 @@
 _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Link.html#chainer.Link)_
 
 ## Static Analysis
-### Topic Matrix
+### Topic matrix
 1. Shape: _**[n_topics, n_dim]**_
 2. Flow:
 
-  | Module | From | To | Notes |
-  | - | - | - | - |
-  | embed_mixture.py | L.Parameter(factors)) | | factors: Topic vector matrix. |
-  | lda2vec_model.py | | kwargs['mixture'] | |
-  | lda2vec_run.py | | model.mixture.factors.W.data | |
-  | topics.py | | prepare_topics.factors | |
+  | Module | From ... To ... | Notes |
+  | - | - | - |
+  | embed_mixture.py | L.Parameter(factors)) | factors: Topic vector matrix. |
+  | lda2vec_model.py | kwargs['mixture'] | |
+  | lda2vec_run.py | model.mixture.factors.W.data | |
+  | topics.py | prepare_topics.factors | |
 
-### Word Vector
+### Word vector
 _Matrix of word vectors._<br>
 
 1. Shape: _**[n_words, n_dim]**_
 2. Flow:
 
-  | Module | From | To | Notes |
-  | - | - | - | - |
-  | lda2vec_model.py | | rand = np.random.random(self.sampler.W.data.shape)<br>self.sampler.W.data[:, :] = rand[:, :] | Random initial? |
-  | lda2vec_run.py | | model.sampler.W.data | |
-  | topics.py | | prepare_topics.word_vectors | |
+  | Module | From ... To ... | Notes |
+  | - | - | - |
+  | lda2vec_model.py | rand = np.random.random(self.sampler.W.data.shape)<br>self.sampler.W.data[:, :] = rand[:, :] | Random initial? |
+  | lda2vec_run.py | model.sampler.W.data | |
+  | topics.py | prepare_topics.word_vectors | |
 
-### Document Weight
+### Document weight
 _An array of unnormalized log-odds of document-to-topic weights._<br>
 
 1. Shape: _**[n_documents, n_topics]**_
 2. Flow:
 
-  | Module | From | To | Notes |
+  | Module | From ... To ... | Notes |
   | - | - | - | - |
-  | embed_mixture.py | L.EmbedID(n_documents, n_topics) | | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
-  | lda2vec_model.py | | kwargs['mixture'] |  |
-  | lda2vec_run.py | | model.mixture.weights.W.data | |
-  | topics.py | | prepare_topics.weights | |
+  | embed_mixture.py | L.EmbedID(n_documents, n_topics) | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
+  | lda2vec_model.py | kwargs['mixture'] |  |
+  | lda2vec_run.py | model.mixture.weights.W.data | |
+  | topics.py | prepare_topics.weights | |
 
-### Pivot Word
+### Pivot word
 _Extract **pairs of pivot and target words** that occur in the **moving window** that scans across the **corpus**_.<br>
 _For every pair, **pivot** is used to predict **the nearby arget word**._<br>
 
 1. To **word vector** flow:
 
-  | Module | From | To | Notes |
-  | - | - | - | - |
-  | lda2vec_model.py:fit_partial | pivot_idx = next(move(self.xp, rword_indices[window: -window]))<br>pivot = F.[embed_id](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.functions.embed_id.html?highlight=embed_id#chainer.functions.embed_id)(pivot_idx, self.sampler.W) | | |
+  | Module | From ... To ... | Notes |
+  | - | - | - |
+  | lda2vec_model.py:fit_partial | pivot_idx = next(move(self.xp, rword_indices[window: -window]))<br>pivot = F.[embed_id](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.functions.embed_id.html?highlight=embed_id#chainer.functions.embed_id)(pivot_idx, self.sampler.W) | |
 
 ### Document proportion
 _The **document weights** are **softmax** transformed weights to yield the **document proportions**_.<br>
 
 1. Flow:
 
-  | Module | From | To | Notes |
-  | - | - | - | - |
-  | embed_mixture.py:__call__ | self.proportions(doc_ids, softmax=True) | | sums to 100% and indicates the topic proportions of a single document |
+  | Module | From ... To ... | Notes |
+  | - | - | - |
+  | embed_mixture.py:__call__ | self.proportions(doc_ids, softmax=True) | sums to 100% and indicates the topic proportions of a single document |
 
 ## Model Analysis
 

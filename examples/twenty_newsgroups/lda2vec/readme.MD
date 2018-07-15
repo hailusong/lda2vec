@@ -88,14 +88,14 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 | lda2vec_model.py:<br>fit_partial() | **Word vector**<br>F.dropout(pivot, self.dropout_ratio) | **Document vector**<br>F.dropout(doc, self.dropout_ratio) | + | Context vector - **context** | |
 | embed_mixture.py:<br>\__call__() | **Document proportion** | **Topic matrix** | F.matmul | Document vector | |
 | lda2vec_model.py:<br>fit_partial() | **Context vector** | **Target word** | [L.NegativeSampling](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.NegativeSampling.html?highlight=negativesampling) | _loss value_ |
-| lda2vec_run.py | **Document weight** | | dirichlet_likelihood<br>_lda2vec_model.py:prior()_ | _loss value_ | Sparse document proportions |
+| lda2vec_run.py | **Document weight** | | dirichlet_likelihood<br>_lda2vec_model.py:prior()_ | _loss value_ | Sparse document proportions.<br>dirichlet_likelihood calculates the log likelihood of the observed topic proportions. |
 
 ### Loss functions
 
-| Loss | Where | Notes | Logging |
-| - | - | - | - |
-| L.NegativeSampling | lda2vec_model.py:fit_partial() | For each mini-batch...<br>&nbsp;&nbsp;_do loss.backward() in each moving frame window_ | _**L**_ |
-| dirichlet_likelihood * fraction | lda2vec_run.py | Do loss.backward() in each mini-batch | _**P**_ |
+| Loss | Between what | and what | Where | Notes | Logging |
+| - | - | - | - | - | - |
+| L.NegativeSampling | _**context vector**_ | _**target word**_ | lda2vec_model.py:fit_partial() | For each mini-batch...<br>&nbsp;&nbsp;_do loss.backward() in each moving frame window_ | _**L**_ |
+| dirichlet_likelihood | mixture.weights<br>_**document weights**_ | | lda2vec_run.py | Do loss.backward() in each mini-batch | _**P**_ |
 
 ## Diagram
 ![img](/lda2vec_network_publish_text.gif)

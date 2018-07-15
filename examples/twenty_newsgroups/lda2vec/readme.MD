@@ -92,10 +92,10 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 
 ### Loss functions
 
-| Loss | Where | Notes |
-| - | - | - |
-| L.NegativeSampling | lda2vec_model.py:fit_partial() | loss.backward in each moving frame window |
-| dirichlet_likelihood * fraction | lda2vec_run.py | loss.backward() in each mini-batch |
+| Loss | Where | Notes | Logging |
+| - | - | - | - |
+| L.NegativeSampling | lda2vec_model.py:fit_partial() | loss.backward in each moving frame window | _**L**_ |
+| dirichlet_likelihood * fraction | lda2vec_run.py | loss.backward() in each mini-batch | _**P**_ |
 
 ## Diagram
 ![img](/lda2vec_network_publish_text.gif)

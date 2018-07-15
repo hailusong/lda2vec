@@ -88,7 +88,7 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 | lda2vec_model.py:<br>fit_partial() | **Word vector**<br>F.dropout(pivot, self.dropout_ratio) | **Document vector**<br>F.dropout(doc, self.dropout_ratio) | + | Context vector - **context** | |
 | embed_mixture.py:<br>\__call__() | **Document proportion** | **Topic matrix** | F.matmul | Document vector | |
 | lda2vec_model.py:<br>fit_partial() | **Context vector** | **Target word** | [L.NegativeSampling](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.NegativeSampling.html?highlight=negativesampling) | _loss value_ |
-| lda2vec_run.py | **Document weight** | | dirichlet_likelihood<br>lda2vec_model.py:prior() | _loss value_ | -> prior * fraction => loss |
+| lda2vec_run.py | **Document weight** | | dirichlet_likelihood<br>_lda2vec_model.py:prior()_ | _loss value_ | -> prior * fraction => loss |
 
 ## Diagram
 ![img](/lda2vec_network_publish_text.gif)

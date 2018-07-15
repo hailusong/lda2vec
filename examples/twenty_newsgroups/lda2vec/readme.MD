@@ -8,7 +8,7 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 
   | Module | From ... To ... | Notes |
   | - | - | - |
-  | embed_mixture.py | L.Parameter(factors)) | factors: Topic vector matrix. |
+  | embed_mixture.py | L.[Parameter](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.Parameter.html)(factors)) | factors: Topic vector matrix. |
   | lda2vec_model.py | kwargs['mixture'] | |
   | lda2vec_run.py | model.mixture.factors.W.data | |
   | topics.py | prepare_topics.factors | |
@@ -33,7 +33,7 @@ _An array of unnormalized log-odds of document-to-topic weights._<br>
 
   | Module | From ... To ... | Notes |
   | - | - | - | - |
-  | embed_mixture.py | L.EmbedID(n_documents, n_topics) | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
+  | embed_mixture.py | L.[EmbedID](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.EmbedID.html?highlight=embedid)(n_documents, n_topics) | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
   | lda2vec_model.py | kwargs['mixture'] |  |
   | lda2vec_run.py | model.mixture.weights.W.data | |
   | topics.py | prepare_topics.weights | |

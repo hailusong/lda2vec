@@ -47,10 +47,12 @@ class LDA2Vec(Chain):
         start, end = window, rword_indices.shape[0] - window
         context = (F.dropout(doc, self.dropout_ratio) +
                    F.dropout(pivot, self.dropout_ratio))
+
         for frame in range(-window, window + 1):
             # Skip predicting the current pivot
             if frame == 0:
                 continue
+
             # Predict word given context and pivot word
             # The target starts before the pivot
             targetidx = rword_indices[start + frame: end + frame]
@@ -68,4 +70,5 @@ class LDA2Vec(Chain):
             if update_only_docs:
                 # Wipe out any gradient accumulation on word vectors
                 self.sampler.W.grad *= 0.0
+
         return loss.data

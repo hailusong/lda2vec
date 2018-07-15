@@ -35,7 +35,7 @@ _An array of unnormalized log-odds of document-to-topic weights._<br>
 2. Flow:
 
   | Module | From ... To ... | Notes |
-  | - | - | - | - |
+  | - | - |  - |
   | embed_mixture.py | L.[EmbedID](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.EmbedID.html?highlight=embedid)(n_documents, n_topics) | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
   | lda2vec_model.py | kwargs['mixture'] |  |
   | lda2vec_run.py | model.mixture.weights.W.data | |

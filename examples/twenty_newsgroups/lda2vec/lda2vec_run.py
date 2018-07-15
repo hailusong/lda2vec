@@ -73,6 +73,7 @@ words = corpus.word_list(vocab)[:n_vocab]
 doc_idx, lengths = np.unique(doc_ids, return_counts=True)
 doc_lengths = np.zeros(doc_ids.max() + 1, dtype='int32')
 doc_lengths[doc_idx] = lengths
+
 # Count all token frequencies
 tok_idx, freq = np.unique(flattened, return_counts=True)
 term_frequency = np.zeros(n_vocab, dtype='int32')
@@ -107,6 +108,7 @@ j = 0
 epoch = 0
 fraction = batchsize * 1.0 / flattened.shape[0]
 progress = shelve.open('progress.shelve')
+
 for epoch in range(200):
     # After the first execution of the statement below, data.keys() =>
     # dict_keys(['vocab', 'doc_lengths', 'doc_topic_dists', 'topic_term_dists', 'term_frequency']

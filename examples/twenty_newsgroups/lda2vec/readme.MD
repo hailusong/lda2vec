@@ -3,6 +3,8 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 
 ## Static Analysis
 ### Topic matrix
+_Each topic has a distributed representation that lives in the same space as word vectors._<br>
+
 1. Shape: _**[n_topics, n_dim]**_
 2. Flow:
 
@@ -14,7 +16,8 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
   | topics.py | prepare_topics.factors | |
 
 ### Word vector
-_Matrix of word vectors._<br>
+_Matrix of word vectors. Each pivot word is represented with a fixed-length dense distributed representation vector._<br>
+_These has ALL of word2vec's faimiliar properties_.<br>
 
 1. Shape: _**[n_words, n_dim]**_
 2. Flow:

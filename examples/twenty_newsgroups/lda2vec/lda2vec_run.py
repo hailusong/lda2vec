@@ -153,10 +153,13 @@ for epoch in range(200):
         model.cleargrads()
 
         l = model.fit_partial(d.copy(), f.copy())
+        optimizer.update()
+
         prior = model.prior()
         loss = prior * fraction
         loss.backward()
         optimizer.update()
+
         msg = ("J:{j:05d} E:{epoch:05d} L:{loss:1.3e} "
                "P:{prior:1.3e} R:{rate:1.3e}")
 

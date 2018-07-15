@@ -1,5 +1,7 @@
 # lda2vec Network to Code Mapping
-_[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Link.html#chainer.Link)_
+_[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Link.html#chainer.Link)_<br>
+- [optimizer.update()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Optimizer.html#chainer.Optimizer)
+- [Variable loss.backward()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Variable.html?highlight=backward#chainer.Variable.backward)
 
 ## Static Analysis
 ### Topic matrix
@@ -94,7 +96,7 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 
 | Loss | Between what | and what | Where | Notes | Logging |
 | - | - | - | - | - | - |
-| L.NegativeSampling | _**context vector**_<br>a.k.a. _pivot word vector + document vector_ | _**target word**_ | lda2vec_model.py:fit_partial() | For each mini-batch...<br>&nbsp;&nbsp;_do loss.backward() in each moving frame window_ | _**L**_ |
+| [L.NegativeSampling](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.NegativeSampling.html?highlight=negativesampling) | _**context vector**_<br>a.k.a. _pivot word vector + document vector_ | _**target word**_ | lda2vec_model.py:fit_partial() | For each mini-batch...<br>&nbsp;&nbsp;_do loss.backward() in each moving frame window_ | _**L**_ |
 | dirichlet_likelihood | _**mixture.weights**_<br>a.k.a. _document weights_ | | lda2vec_run.py | Do loss.backward() in each mini-batch | _**P**_ |
 
 ## Diagram

@@ -10,7 +10,7 @@ _Each topic has a distributed representation that lives in the same space as wor
 
   | Module | From ... To ... | Notes |
   | - | - | - |
-  | embed_mixture.py | factors = \_orthogonal_matrix((n_topics, n_dim)).astype('float32')<br>factors /= np.sqrt(n_topics + n_dim)<br>L.[Parameter](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.Parameter.html)(factors)) | factors: Topic vector matrix. |
+  | embed_mixture.py | factors = \_orthogonal_matrix((n_topics, n_dim)).astype('float32')<br>factors /= np.sqrt(n_topics + n_dim)<br>mixture.factors = L.[Parameter](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.Parameter.html)(factors)) | factors: Topic vector matrix. |
   | lda2vec_model.py | kwargs['mixture'] | |
   | lda2vec_run.py | model.mixture.factors.W.data | |
   | topics.py | prepare_topics.factors | |
@@ -36,7 +36,7 @@ _An array of unnormalized log-odds of document-to-topic weights._<br>
 
   | Module | From ... To ... | Notes |
   | - | - |  - |
-  | embed_mixture.py | L.[EmbedID](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.EmbedID.html?highlight=embedid)(n_documents, n_topics) | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
+  | embed_mixture.py | mixture.weights = L.[EmbedID](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.EmbedID.html?highlight=embedid)(n_documents, n_topics) | weights: unnormalized topic weights (:math:`c_j`).<br>To normalize these weights, use `F.softmax(weights)`.|
   | lda2vec_model.py | kwargs['mixture'] |  |
   | lda2vec_run.py | model.mixture.weights.W.data | |
   | topics.py | prepare_topics.weights | |

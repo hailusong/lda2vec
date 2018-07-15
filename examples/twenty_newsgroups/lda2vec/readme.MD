@@ -8,7 +8,7 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 
   | Module | From ... To ... | Notes |
   | - | - | - |
-  | embed_mixture.py | L.[Parameter](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.Parameter.html)(factors)) | factors: Topic vector matrix. |
+  | embed_mixture.py | factors = \_orthogonal_matrix((n_topics, n_dim)).astype('float32')<br>factors /= np.sqrt(n_topics + n_dim)<br>L.[Parameter](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.Parameter.html)(factors)) | factors: Topic vector matrix. |
   | lda2vec_model.py | kwargs['mixture'] | |
   | lda2vec_run.py | model.mixture.factors.W.data | |
   | topics.py | prepare_topics.factors | |

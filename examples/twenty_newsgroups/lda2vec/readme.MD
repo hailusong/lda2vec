@@ -94,7 +94,7 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 
 | Loss | Between what | and what | Where | Notes | Logging |
 | - | - | - | - | - | - |
-| L.NegativeSampling | _**context vector**_ | _**target word**_ | lda2vec_model.py:fit_partial() | For each mini-batch...<br>&nbsp;&nbsp;_do loss.backward() in each moving frame window_ | _**L**_ |
+| L.NegativeSampling | _**context vector**_<br>a.k.a. _pivot word vector + document vector_ | _**target word**_ | lda2vec_model.py:fit_partial() | For each mini-batch...<br>&nbsp;&nbsp;_do loss.backward() in each moving frame window_ | _**L**_ |
 | dirichlet_likelihood | mixture.weights<br>_**document weights**_ | | lda2vec_run.py | Do loss.backward() in each mini-batch | _**P**_ |
 
 ## Diagram

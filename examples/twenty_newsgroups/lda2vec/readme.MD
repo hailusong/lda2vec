@@ -85,9 +85,9 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 
 | Module | Input #1 | Input #2 | Op | Output | Notes |
 | - | - | - | - | - | - |
-| lda2vec_model.py:fit_partial | **Word vector**<br>F.dropout(pivot, self.dropout_ratio) | **Document vector**<br>F.dropout(doc, self.dropout_ratio) | + | Context vector - **context** | |
-| embed_mixture.py:\__call__ | **Document proportion** | **Topic matrix** | F.matmul | Document vector | |
-| lda2vec_model.py:fit_partial | **Context vector** | **Target word** | [L.NegativeSampling](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.NegativeSampling.html?highlight=negativesampling) | _loss value_ |
+| lda2vec_model.py:<br>fit_partial() | **Word vector**<br>F.dropout(pivot, self.dropout_ratio) | **Document vector**<br>F.dropout(doc, self.dropout_ratio) | + | Context vector - **context** | |
+| embed_mixture.py:<br>\__call__() | **Document proportion** | **Topic matrix** | F.matmul | Document vector | |
+| lda2vec_model.py:<br>fit_partial() | **Context vector** | **Target word** | [L.NegativeSampling](https://docs.chainer.org/en/v3.4.0/reference/generated/chainer.links.NegativeSampling.html?highlight=negativesampling) | _loss value_ |
 | lda2vec_run.py | **Document weight** | | dirichlet_likelihood | _loss value_ | -> prior * fraction => loss |
 
 ## Diagram

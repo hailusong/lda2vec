@@ -152,7 +152,7 @@ for epoch in range(200):
         # optimizer.zero_grads()
         model.cleargrads()
 
-        l = model.fit_partial(d.copy(), f.copy())
+        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=True)
 
         prior = model.prior()
         loss = prior * fraction
@@ -177,11 +177,11 @@ for epoch in range(200):
         print(msg.format(**logs))
         j += 1
 
-        if j % 3 == 0:
-            snapshot = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
-                                 cuda.to_cpu(model.mixture.factors.W.data).copy(),
-                                 cuda.to_cpu(model.sampler.W.data).copy(),
-                                 words)
-            print_top_words_per_topic(snapshot)
+        # if j % 3 == 0:
+        #     snapshot = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
+        #                          cuda.to_cpu(model.mixture.factors.W.data).copy(),
+        #                          cuda.to_cpu(model.sampler.W.data).copy(),
+        #                          words)
+        #     print_top_words_per_topic(snapshot)
 
     serializers.save_hdf5("lda2vec.hdf5", model)

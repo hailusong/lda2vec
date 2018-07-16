@@ -70,13 +70,12 @@ def prepare_topics(weights, factors, word_vectors, vocab, temperature=1.0,
     # --------------------------------------------------------------
     # factors = factors / np.linalg.norm(factors, axis=1)[:, None]
     # --------------------------------------------------------------
-    # (Pdb) factor_to_word
-    # array([3.0697556e-04, 9.8935806e-04, 3.0454597e-04, ..., 7.4080403e-05,
-    #   1.6061513e-04, 2.0046759e-04], dtype=float32)
-    # (Pdb) factor_to_word.shape
-    # (5837, )
-    # (Pdb) factors.shape - 20 topics, 300 embedding dimensions
-    # (20, 300)
+    # (Pdb) factor_to_word -> array([3.0697556e-04, 9.8935806e-04, 3.0454597e-04, ...,
+    #   7.4080403e-05, 1.6061513e-04, 2.0046759e-04], dtype=float32)
+    # (Pdb) factor_to_word.shape -> (5837, )
+    # (Pdb) factors.shape -> (20, 300), 20 topics, 300 embedding dimensions
+    # (Pdb) factors.shape = topic matrix
+    # word_vectors = model.sampler.W.data.shape -> (5837, 300)
     for factor_vector in factors:
         factor_to_word = prob_words(factor_vector, word_vectors,
                                     temperature=temperature)

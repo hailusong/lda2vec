@@ -4,11 +4,23 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 - [Variable loss.backward()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Variable.html?highlight=backward#chainer.Variable.backward)
   * <b>retain_grad</b>: In most cases of training some models, the purpose of backprop is to compute gradients of parameters, not of all variables, and therefore it is recommended to set this flag <b>False</b>
 
+## LDA2Vec Model Constructor Params
+
+| Name | Value | Notes |
+| - | - | - |
+| n_documents | 11314 | document # in data set |
+| n_document_topics | 20 | topic # |
+| n_units | 300 | embedding dimensions |
+| n_vocab | 5837 | word count in vocabulary |
+| dropout_ratio | 0.5 | |
+| train | True | |
+| n_samples | 15 | negative sampler size |
+
 ## Static Analysis
 ### Topic matrix
 _Each topic has a distributed representation that lives in the same space as word vectors._<br>
 
-1. Shape: _**[n_topics, n_dim]**_
+1. Shape: _**[n_topics, n_dim]**_ => (20, 300)
 2. Flow:
 
   | Module | From ... To ... | Notes |
@@ -20,9 +32,9 @@ _Each topic has a distributed representation that lives in the same space as wor
 
 ### Word vector
 _Matrix of word vectors. Each pivot word is represented with a fixed-length dense distributed representation vector._<br>
-_These has ALL of word2vec's faimiliar properties_.<br>
+_These has ALL of word2vec's familiar properties_.<br>
 
-1. Shape: _**[n_words, n_dim]**_
+1. Shape: _**[n_words, n_dim]**_ => (5837, 300)
 2. Flow:
 
   | Module | From ... To ... | Notes |
@@ -34,7 +46,7 @@ _These has ALL of word2vec's faimiliar properties_.<br>
 ### Document weight
 _An array of unnormalized log-odds of document-to-topic weights._<br>
 
-1. Shape: _**[n_documents, n_topics]**_
+1. Shape: _**[n_documents, n_topics]**_ => (11314, 20)
 2. Flow:
 
   | Module | From ... To ... | Notes |

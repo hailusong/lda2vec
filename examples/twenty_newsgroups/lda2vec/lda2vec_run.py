@@ -88,7 +88,7 @@ for key in sorted(locals().keys()):
 
 model = LDA2Vec(n_documents=n_docs, n_document_topics=n_topics,
                 n_units=n_units, n_vocab=n_vocab, counts=term_frequency,
-                n_samples=15, power=power, temperature=temperature)
+                n_samples=15, power=power, temperature=temperature, vocab=words)
 if os.path.exists('lda2vec.hdf5'):
     print("Reloading from saved")
     serializers.load_hdf5("lda2vec.hdf5", model)
@@ -102,8 +102,8 @@ if gpu_id >= 0:
 else:
     model.to_cpu()
 
-# optimizer = O.Adam()
-optimizer = O.SGD()
+optimizer = O.Adam()
+# optimizer = O.SGD()
 optimizer.setup(model)
 clip = chainer.optimizer.GradientClipping(5.0)
 optimizer.add_hook(clip)
@@ -156,10 +156,10 @@ for epoch in range(200):
         # optimizer.zero_grads()
         model.cleargrads()
 
-        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=True)
+        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=False)
 
         prior = model.prior()
-        loss = prior * fraction
+        loss = clambda * prior * fraction
         loss.backward()
         optimizer.update()
 

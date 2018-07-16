@@ -13,7 +13,7 @@ class LDA2Vec(Chain):
     def __init__(self, n_documents=100, n_document_topics=10,
                  n_units=256, n_vocab=1000, dropout_ratio=0.5, train=True,
                  counts=None, n_samples=15, word_dropout_ratio=0.0,
-                 power=0.75, temperature=1.0):
+                 power=0.75, temperature=1.0, vocab=None):
         em = EmbedMixture(n_documents, n_document_topics, n_units,
                           dropout_ratio=dropout_ratio, temperature=temperature)
         kwargs = {}
@@ -28,6 +28,7 @@ class LDA2Vec(Chain):
         self.dropout_ratio = dropout_ratio
         self.word_dropout_ratio = word_dropout_ratio
         self.n_samples = n_samples
+        self.vocab = vocab
 
     def prior(self):
         dl1 = dirichlet_likelihood(self.mixture.weights)
@@ -42,9 +43,8 @@ class LDA2Vec(Chain):
             pivot.unchain_backward()
 
         doc_at_pivot = rdoc_ids[window: -window]
-        # doc = self.mixture(next(move(self.xp, doc_at_pivot)),
-        #                    update_only_docs=update_only_docs)
-        doc = self.mixture(next(move(self.xp, doc_at_pivot)))
+        doc = self.mixture(next(move(self.xp, doc_at_pivot)),
+                           update_only_docs=update_only_docs)
         loss = 0.0
         start, end = window, rword_indices.shape[0] - window
         context = (F.dropout(doc, self.dropout_ratio) +
@@ -69,6 +69,12 @@ class LDA2Vec(Chain):
             targetidx = targetidx * weight + -1 * (1 - weight)
             target, = move(self.xp, targetidx)
 
+            # (Pdb) context.shape -> (4086, 300), dtype('float32')
+            # (Pdb) weight.shape -> (4086,), dtype('int32')
+            # (Pdb) targetidx.shape -> (4086,), dtype('int64')
+            # (Pdb) target.shape -> (4086,), dtype('int32')
+            # (Pdb) pivot_idx.shape -> (4086,), dtype('int32')
+            # (Pdb) pivot.shape -> (4086, 300), dtype('float32')
             loss = self.sampler(context, target)
             loss.backward()
 

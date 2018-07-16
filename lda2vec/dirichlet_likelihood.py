@@ -35,6 +35,9 @@ def dirichlet_likelihood(weights, alpha=None):
     else:
         log_proportions = F.log_softmax(weights.W)
 
+    # positive
     loss = (alpha - 1.0) * log_proportions
+    # negative
     # return -F.sum(loss)
+
     return F.sum(loss)

@@ -19,7 +19,7 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 ### Model Parameters
 
 | update_only_docs = True | update_only_docs = False |
-| - | - | - |
+| - | - | 
 | (Pdb) [param.shape for param in model.params()] | (Pdb) [param.shape for param in model.params()] |
 | [(5837, 300), (20, 300), (11314, 20)] | [(5837, 300), (20, 300), (11314, 20)] |
 | (Pdb) [param.name for param in model.params()] | (Pdb) [param.name for param in model.params()] |

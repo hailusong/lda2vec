@@ -18,6 +18,7 @@ import numpy as np
 from lda2vec import utils
 from lda2vec import prepare_topics, print_top_words_per_topic, topic_coherence
 from lda2vec_model import LDA2Vec
+from lda2vec.logging import logger
 
 gpu_id = int(os.getenv('CUDA_GPU', -1))
 if gpu_id >= 0:
@@ -92,6 +93,7 @@ if os.path.exists('lda2vec.hdf5'):
     serializers.load_hdf5("lda2vec.hdf5", model)
 
 if pretrained:
+    logger.info('Use pre-trained Google word2vec')
     model.sampler.W.data[:, :] = vectors[:n_vocab, :]
 
 if gpu_id >= 0:
@@ -177,11 +179,13 @@ for epoch in range(200):
         print(msg.format(**logs))
         j += 1
 
-        # if j % 3 == 0:
-        #     snapshot = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
-        #                          cuda.to_cpu(model.mixture.factors.W.data).copy(),
-        #                          cuda.to_cpu(model.sampler.W.data).copy(),
-        #                          words)
-        #     print_top_words_per_topic(snapshot)
+        if j % 12 == 0:
+            params_log = ['{}/{},'.format(param.shape, param.name) for param in model.params()]
+            logger.info('Parameters: {}'.format(params_log))
+            snapshot = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
+                                 cuda.to_cpu(model.mixture.factors.W.data).copy(),
+                                 cuda.to_cpu(model.sampler.W.data).copy(),
+                                 words)
+            print_top_words_per_topic(snapshot)
 
     serializers.save_hdf5("lda2vec.hdf5", model)

@@ -19,7 +19,7 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 ### Model Parameters
 
 | update_only_docs = True | update_only_docs = False |
-| - | - | 
+| - | - |
 | (Pdb) [param.shape for param in model.params()] | (Pdb) [param.shape for param in model.params()] |
 | [(5837, 300), (20, 300), (11314, 20)] | [(5837, 300), (20, 300), (11314, 20)] |
 | (Pdb) [param.name for param in model.params()] | (Pdb) [param.name for param in model.params()] |
@@ -28,6 +28,7 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 ## Static Analysis
 ### Topic matrix
 _Each topic has a distributed representation that lives in the same space as word vectors._<br>
+_a.k.a., **factor_vector, factors**_
 
 1. Shape: _**[n_topics, n_dim]**_ => (20, 300)
 2. Flow:

@@ -1,5 +1,6 @@
 import chainer.functions as F
 from chainer import Variable
+from lda2vec.logging import logger
 
 
 def dirichlet_likelihood(weights, alpha=None):
@@ -24,11 +25,16 @@ def dirichlet_likelihood(weights, alpha=None):
         n_topics = weights.data.shape[1]
     else:
         n_topics = weights.W.data.shape[1]
+    # logger.info('dirichlet_likelihood on topics of {}'.format(n_topics))
+
     if alpha is None:
         alpha = 1.0 / n_topics
+
     if type(weights) is Variable:
         log_proportions = F.log_softmax(weights)
     else:
         log_proportions = F.log_softmax(weights.W)
+
     loss = (alpha - 1.0) * log_proportions
-    return -F.sum(loss)
+    # return -F.sum(loss)
+    return F.sum(loss)

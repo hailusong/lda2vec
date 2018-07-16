@@ -1,6 +1,8 @@
 import numpy as np
 import requests
 import multiprocessing
+from lda2vec.utils import consine_distance
+from lda2vec.logging import logger
 
 
 def _softmax(x):
@@ -19,8 +21,15 @@ def _softmax_2d(x):
 def prob_words(context, vocab, temperature=1.0):
     """ This calculates a softmax over the vocabulary as a function
     of the dot product of context and word.
+    Note that the distance between word-embedding points is cosine distance.
+    The formula is:
+    cosine_similarity = np.dot(model['spain'], model['france']) /
+                        (np.linalg.norm(model['spain']) * np.linalg.norm(model['france']))
     """
     dot = np.dot(vocab, context)
+    base = np.linalg.norm(vocab) * np.linalg.norm(context)
+    dot /= base
+
     prob = _softmax(dot / temperature)
     return prob
 
@@ -70,15 +79,20 @@ def prepare_topics(weights, factors, word_vectors, vocab, temperature=1.0,
     # --------------------------------------------------------------
     # factors = factors / np.linalg.norm(factors, axis=1)[:, None]
     # --------------------------------------------------------------
-    # (Pdb) factor_to_word -> array([3.0697556e-04, 9.8935806e-04, 3.0454597e-04, ...,
-    #   7.4080403e-05, 1.6061513e-04, 2.0046759e-04], dtype=float32)
-    # (Pdb) factor_to_word.shape -> (5837, )
+    # factors = topic matrix
     # (Pdb) factors.shape -> (20, 300), 20 topics, 300 embedding dimensions
-    # (Pdb) factors.shape = topic matrix
     # word_vectors = model.sampler.W.data.shape -> (5837, 300)
+    dist1 = consine_distance(factors[0], factors[1])
+    dist2 = consine_distance(factors[1], factors[2])
+    logger.info('Topic/0-1 cosine: {}, /1-2 cosine: {}'.format(dist1, dist2))
+
     for factor_vector in factors:
+        # (Pdb) factor_to_word.shape -> (5837, )
+        # (Pdb) factor_to_word -> array([3.0697556e-04, 9.8935806e-04, 3.0454597e-04, ...,
+        #   7.4080403e-05, 1.6061513e-04, 2.0046759e-04], dtype=float32)
         factor_to_word = prob_words(factor_vector, word_vectors,
                                     temperature=temperature)
+
         topic_to_word.append(np.ravel(factor_to_word))
 
     # Before >>>

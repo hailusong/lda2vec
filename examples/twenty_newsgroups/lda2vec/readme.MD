@@ -3,6 +3,7 @@ _[Chainer 3.4.0 Reference](https://docs.chainer.org/en/v3.4.0/reference/core/gen
 - [optimizer.update()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Optimizer.html#chainer.Optimizer)
 - [Variable loss.backward()](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Variable.html?highlight=backward#chainer.Variable.backward)
   * <b>retain_grad</b>: In most cases of training some models, the purpose of backprop is to compute gradients of parameters, not of all variables, and therefore it is recommended to set this flag <b>False</b>
+- [Parameter](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Parameter.html) is a sub-class of [Variable](https://docs.chainer.org/en/v3.4.0/reference/core/generated/chainer.Variable.html)
 
 ## LDA2Vec Model Constructor Params
 
@@ -124,3 +125,19 @@ _The **document weights** are **softmax** transformed weights to yield the **doc
 
 ## Diagram
 ![img](/lda2vec_network_publish_text.gif)
+
+### Relevant TF Implementation
+1. [Changes that seem to work](https://github.com/nateraw/Lda2vec-Tensorflow/commit/50835811dfdf50bff62042191112f2b344b8d45f)
+2. [Similiar issues](https://github.com/nateraw/Lda2vec-Tensorflow/issues/8)
+  - haven't seen the k_closest function return anything promising and the topic embedding vectors are all pretty much the same
+  - never even uses the lambda variable talked about in the paper
+  - negative dirichlet_likelihood - Very confusing!
+  - can add additional context by passing in different unique IDs relating to documents. In the example above, you can see that each document has a unique ID as well as a unique zip code. Then, you can use these additional contexts to model topics over multiple contexts (ex. how do people from similar zip codes speak).
+  ![img](https://user-images.githubusercontent.com/32437151/42529932-c86f6e0c-844d-11e8-861a-11f5c70dfe84.png)
+  - after changing up my preprocessing to clean out some nonsense out of the 20 newsgroups dataset, it is working much better
+  - Loss example
+
+    ```
+    EPOCH: 10
+    STEP 800 LOSS -43950.285 w2v 154.05565 lda -44104.34
+    ```

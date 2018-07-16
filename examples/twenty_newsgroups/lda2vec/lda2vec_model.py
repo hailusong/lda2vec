@@ -42,8 +42,9 @@ class LDA2Vec(Chain):
             pivot.unchain_backward()
 
         doc_at_pivot = rdoc_ids[window: -window]
-        doc = self.mixture(next(move(self.xp, doc_at_pivot)),
-                           update_only_docs=update_only_docs)
+        # doc = self.mixture(next(move(self.xp, doc_at_pivot)),
+        #                    update_only_docs=update_only_docs)
+        doc = self.mixture(next(move(self.xp, doc_at_pivot)))
         loss = 0.0
         start, end = window, rword_indices.shape[0] - window
         context = (F.dropout(doc, self.dropout_ratio) +
@@ -73,6 +74,7 @@ class LDA2Vec(Chain):
 
             if update_only_docs:
                 # Wipe out any gradient accumulation on word vectors
-                self.sampler.W.grad *= 0.0
+                # self.sampler.W.grad *= 0.0
+                self.sampler.W.cleargrads()
 
         return loss.data

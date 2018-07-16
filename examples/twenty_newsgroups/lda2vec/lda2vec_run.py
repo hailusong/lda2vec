@@ -19,6 +19,7 @@ from lda2vec import utils
 from lda2vec import prepare_topics, print_top_words_per_topic, topic_coherence
 from lda2vec_model import LDA2Vec
 from lda2vec.logging import logger
+from lda2vec.utils import consine_distance
 
 gpu_id = int(os.getenv('CUDA_GPU', -1))
 if gpu_id >= 0:
@@ -101,7 +102,8 @@ if gpu_id >= 0:
 else:
     model.to_cpu()
 
-optimizer = O.Adam()
+# optimizer = O.Adam()
+optimizer = O.SGD()
 optimizer.setup(model)
 clip = chainer.optimizer.GradientClipping(5.0)
 optimizer.add_hook(clip)
@@ -128,12 +130,12 @@ for epoch in range(200):
         data = prepare_topics(cuda.to_gpu(model.mixture.weights.W.data).copy(),
                               cuda.to_gpu(model.mixture.factors.W.data).copy(),
                               cuda.to_gpu(model.sampler.W.data).copy(),
-                              words)
+                              words, normalize = False)
     else:
         data = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
                               cuda.to_cpu(model.mixture.factors.W.data).copy(),
                               cuda.to_cpu(model.sampler.W.data).copy(),
-                              words)
+                              words, normalize = False)
 
     top_words = print_top_words_per_topic(data)
 
@@ -154,7 +156,7 @@ for epoch in range(200):
         # optimizer.zero_grads()
         model.cleargrads()
 
-        l = model.fit_partial(d.copy(), f.copy())
+        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=True)
 
         prior = model.prior()
         loss = prior * fraction
@@ -180,12 +182,21 @@ for epoch in range(200):
         j += 1
 
         if j % 12 == 0:
+            logger.info('Word vectors grad: {}'.format(model.sampler.W.grad))
+            logger.info('Document weights grad: {}'.format(model.mixture.weights.W.grad))
+            logger.info('Topic matrix grad: {}'.format(model.mixture.factors.W.grad))
+
             params_log = ['{}/{},'.format(param.shape, param.name) for param in model.params()]
             logger.info('Parameters: {}'.format(params_log))
+
+            dist1 = consine_distance(model.mixture.weights.W.data[0,:], model.mixture.weights.W.data[1,:])
+            dist2 = consine_distance(model.mixture.weights.W.data[1,:], model.mixture.weights.W.data[2,:])
+            logger.info('Doc/0-1 cosine: {}, /1-2 cosine: {}'.format(dist1, dist2))
+
             snapshot = prepare_topics(cuda.to_cpu(model.mixture.weights.W.data).copy(),
                                  cuda.to_cpu(model.mixture.factors.W.data).copy(),
                                  cuda.to_cpu(model.sampler.W.data).copy(),
-                                 words)
+                                 words, normalize = False)
             print_top_words_per_topic(snapshot)
 
     serializers.save_hdf5("lda2vec.hdf5", model)

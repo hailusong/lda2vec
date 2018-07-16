@@ -4,6 +4,7 @@ import chainer
 import chainer.links as L
 import chainer.functions as F
 from chainer import Variable
+from lda2vec.logging import logger
 
 
 def _orthogonal_matrix(shape):
@@ -69,8 +70,12 @@ class EmbedMixture(chainer.Chain):
         self.dropout_ratio = dropout_ratio
         factors = _orthogonal_matrix((n_topics, n_dim)).astype('float32')
         factors /= np.sqrt(n_topics + n_dim)
+
+        document_weights = L.EmbedID(n_documents, n_topics)
+        logger.info('>>>>>{},{}'.format(n_documents, n_topics))
         super(EmbedMixture, self).__init__(
-            weights=L.EmbedID(n_documents, n_topics),
+            # weights=L.Parameter(document_weights.W.data),
+            weights=document_weights,
             factors=L.Parameter(factors))
         self.temperature = temperature
         self.weights.W.data[...] /= np.sqrt(n_documents + n_topics)

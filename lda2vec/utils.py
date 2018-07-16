@@ -17,6 +17,15 @@ def most_similar(embeddings, word_index):
     return similarities
 
 
+def consine_distance(context1, context2):
+    """ This calculates a cosine distance between two points in the word embedding space.
+    Source: https://masongallo.github.io/machine/learning,/python/2016/07/29/cosine-similarity.html
+    """
+    dot = np.dot(context1, context2)
+    base = np.linalg.norm(context1) * np.linalg.norm(context2)
+    return dot / base
+
+
 def chunks(n, *args):
     """Yield successive n-sized chunks from l."""
     # From stackoverflow question 312443

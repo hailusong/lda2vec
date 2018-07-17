@@ -76,8 +76,8 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
 
     if nlp is None:
         # nlp = English()
-        # nlp = spacy.load('en_core_web_sm')
-        nlp = spacy.load('en_core_web_lg')
+        nlp = spacy.load('en_core_web_sm')
+        # nlp = spacy.load('en_core_web_lg')
 
     data = np.zeros((len(texts), max_length), dtype='uint64')
     data[:] = skip_uint64

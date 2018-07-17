@@ -4,6 +4,10 @@ from spacy.lang.en.examples import sentences
 
 # nlp = English()
 nlp = spacy.load('en_core_web_sm')
+
+for doc in nlp(sentences[0]):
+    print(doc.lemma, doc.lemma_, doc.lower, doc.lower_)
+
 for row, doc in enumerate(nlp.pipe(sentences)):
     print(doc.text)
     print(doc.to_array([spacy.attrs.LEMMA, spacy.attrs.LIKE_EMAIL]))

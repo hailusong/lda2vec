@@ -119,8 +119,12 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
             idx = (dat[:, 1] > 0) | (dat[:, 2] > 0)
             dat[idx] = skip_uint64
             length = min(len(dat), max_length)
+
+            # copy the long hash# of all words in the sentence to data in row 'row'
             data[row, :length] = dat[:length, 0].ravel()
 
+    # get all unique long hash# list and construct our own vocabulary dictionary
+    # from long hash# to word (total ~5864 for twenty newsgroup example data)
     uniques = np.unique(data)
     if attr == LOWER:
         logger.info('Construct vocabulary with lower_')

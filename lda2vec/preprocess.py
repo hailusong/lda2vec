@@ -1,5 +1,6 @@
+import spacy
 from spacy.lang.en import English
-from spacy.attrs import LOWER, LIKE_URL, LIKE_EMAIL
+from spacy.attrs import LEMMA, LOWER, LIKE_URL, LIKE_EMAIL
 import numpy as np
 from lda2vec.logging import logger
 
@@ -74,10 +75,16 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     logger.info('Special token {} is converted to uint64 {}'.format(skip, skip_uint64))
 
     if nlp is None:
-        nlp = English()
+        # nlp = English()
+        # nlp = spacy.load('en_core_web_sm')
+        nlp = spacy.load('en_core_web_lg')
+
     data = np.zeros((len(texts), max_length), dtype='uint64')
     data[:] = skip_uint64
     bad_deps = ('amod', 'compound')
+
+    # row - nth document
+    # doc - document text
     for row, doc in enumerate(nlp.pipe(texts, **kwargs)):
         if merge:
             # from the spaCy blog, an example on how to merge
@@ -115,7 +122,12 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
             data[row, :length] = dat[:length, 0].ravel()
 
     uniques = np.unique(data)
-    vocab = {v: nlp.vocab[v].lower_ for v in uniques if v != skip_uint64}
+    if attr == LOWER:
+        logger.info('Construct vocabulary with lower_')
+        vocab = {v: nlp.vocab[v].lower_ for v in uniques if v != skip_uint64}
+    else:
+        logger.info('Construct vocabulary with lemma_')
+        vocab = {v: nlp.vocab[v].lemma_ for v in uniques if v != skip_uint64}
     vocab[skip_uint64] = '<SKIP>'
 
     # data -> tokens in preprocess.py

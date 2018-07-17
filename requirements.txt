@@ -1,8 +1,7 @@
-chainer>=3.4.0
+chainer>=3.4.0; python_version >= '3.5.0'
 numpy>=1.14.1
 spacy>=2.0.11
 scipy>=1.0.0
 sklearn
-python>=3.5.0
 gensim>=3.3.0
 pyxDamerauLevenshtein>=1.5

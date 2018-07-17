@@ -8,6 +8,7 @@ from sklearn.datasets import fetch_20newsgroups
 import numpy as np
 from lda2vec import preprocess, Corpus
 from lda2vec.logging import logger
+from spacy.attrs import LEMMA
 
 
 # Fetch data
@@ -25,8 +26,8 @@ max_length = 10000   # Limit of 10k words per document
 # Convert to unicode (spaCy only works with unicode)
 # texts = [unicode(clean(d)) for d in texts]
 texts = [clean(d) for d in texts]
-tokens, vocab = preprocess.tokenize(texts, max_length, merge=False,
-                                    n_threads=4)
+tokens, vocab = preprocess.tokenize(texts, max_length, merge=False, attr=LEMMA,
+                                    n_threads=1)
 corpus = Corpus()
 # Make a ranked list of rare vs frequent words
 corpus.update_word_count(tokens)

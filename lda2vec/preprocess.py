@@ -1,3 +1,4 @@
+from tqdm import tqdm
 import spacy
 from spacy.lang.en import English
 from spacy.attrs import LEMMA, LOWER, LIKE_URL, LIKE_EMAIL
@@ -85,7 +86,8 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
 
     # row - nth document
     # doc - document text
-    for row, doc in enumerate(nlp.pipe(texts, **kwargs)):
+    for row, doc in enumerate(tqdm(nlp.pipe(texts, **kwargs))):
+        assert 'ax>' not in doc.text.lower(), f'ax> found in "{doc.text}"'
         if merge:
             # from the spaCy blog, an example on how to merge
             # noun phrases into single tokens
@@ -108,6 +110,10 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
         # Second column is LIKE_EMAIL: yes/no, true/false
         # Third column is LIKE_URL: yes/no, true/false
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
+        for r, v in enumerate(dat[:, 0]):
+            assert_txt = nlp.vocab[v].text
+            assert 'ax>' not in assert_txt, f'ax> found in "{assert_txt}"/{r}/{v}/{doc.text}'
+
         if len(dat) > 0:
             dat_max_hash = dat.max()
             # logger.info('Max hash# detected is {}'.format(dat_max_hash))
@@ -126,12 +132,9 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     # get all unique long hash# list and construct our own vocabulary dictionary
     # from long hash# to word (total ~5864 for twenty newsgroup example data)
     uniques = np.unique(data)
-    if attr == LOWER:
-        logger.info('Construct vocabulary with lower_')
-        vocab = {v: nlp.vocab[v].lower_ for v in uniques if v != skip_uint64}
-    else:
-        logger.info('Construct vocabulary with lemma_')
-        vocab = {v: nlp.vocab[v].lemma_ for v in uniques if v != skip_uint64}
+    assert attr == LOWER or attr == LEMMA
+    logger.info(f'Construct vocabulary with {attr}')
+    vocab = {v: nlp.vocab[v].text for v in uniques if v != skip_uint64}
     vocab[skip_uint64] = '<SKIP>'
 
     # data -> tokens in preprocess.py

@@ -5,3 +5,4 @@ scipy>=1.0.0
 sklearn
 gensim>=3.3.0
 pyxDamerauLevenshtein>=1.5
+tqdm>=4.23.4

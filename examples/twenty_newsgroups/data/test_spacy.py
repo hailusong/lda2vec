@@ -6,6 +6,7 @@ from spacy.lang.en.examples import sentences
 nlp = spacy.load('en_core_web_sm')
 
 for doc in nlp(sentences[0]):
+    assert doc.lemma_ == nlp.vocab[doc.lemma].text
     print(doc.lemma, doc.lemma_, doc.lower, doc.lower_)
 
 for row, doc in enumerate(nlp.pipe(sentences)):

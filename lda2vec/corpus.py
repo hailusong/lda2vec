@@ -634,6 +634,11 @@ class Corpus():
                 clean = rep(word)
                 # note that  model is gensim model loaded from GoogleNews word2vec data.
                 # model.vocab is the vocabulary of GoogleNews word2vec vocabulary.
+                # TODO: note that if we use LEMMA when constructing our own library,
+                # then lemma words in our library may or may not be available in
+                # GoogleNews vocabulary, unless we have access to LEMMA data in
+                # GoogleNews vocabulary. In that case we currently depend on
+                # similarity to look for the replacement word.
                 if clean in model.vocab:
                     vector = model[clean]
                     break

@@ -15,11 +15,11 @@ from spacy.attrs import LEMMA
 remove = ('headers', 'footers', 'quotes')
 texts = fetch_20newsgroups(subset='train', remove=remove).data
 # Remove tokens with these substrings
-bad = set(["ax>", '`@("', '---', '===', '^^^'])
+bad = set(["ax>", '`@("', '---', '===', '^^^', '|||', '\\\\', '////', '%', '@', ':', '$'])
 
 
 def clean(line):
-    return ' '.join(w for w in line.split() if not any(t in w for t in bad))
+    return ' '.join(w for w in line.split() if not any(t in w.lower() for t in bad))
 
 # Preprocess data
 max_length = 10000   # Limit of 10k words per document
@@ -27,7 +27,7 @@ max_length = 10000   # Limit of 10k words per document
 # texts = [unicode(clean(d)) for d in texts]
 texts = [clean(d) for d in texts]
 tokens, vocab = preprocess.tokenize(texts, max_length, merge=False, attr=LEMMA,
-                                    n_threads=1)
+                                    n_threads=8)
 corpus = Corpus()
 # Make a ranked list of rare vs frequent words
 corpus.update_word_count(tokens)

@@ -8,17 +8,14 @@
 1. Word2vec - skip-gram
   - Pivot word -> context words
   - Capture word-to-word relationship<br>
-
-  <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim00.gif" width=50%/>
-2. LDA
+  <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim00.gif" width=50%/><br>
+2. LDA<br>
   - Document vector -> words in document
   - Capture global relationship, not word-to-word relationship<br>
-
-    <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim01.gif" width=50%/>
-3. Lda2Vec
+    <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim01.gif" width=50%/><br>
+3. Lda2Vec<br>
   - Capture both global and local relationship at the same time<br>
-
-    <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim02.gif" width=50%/>
+    <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim02.gif" width=50%/><br>
 
 ## Implementations
 1. [Original cemoody/lda2vec](https://github.com/cemoody/lda2vec)

@@ -87,7 +87,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     # row - nth document
     # doc - document text
     for row, doc in enumerate(tqdm(nlp.pipe(texts, **kwargs))):
-        assert 'ax>' not in doc.text.lower(), f'ax> found in "{doc.text}"'
+        assert 'ax>' not in doc.text.lower(), 'ax> found in "{doc.text}"'
         if merge:
             # from the spaCy blog, an example on how to merge
             # noun phrases into single tokens
@@ -112,7 +112,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
         for r, v in enumerate(dat[:, 0]):
             assert_txt = nlp.vocab[v].text
-            assert 'ax>' not in assert_txt, f'ax> found in "{assert_txt}"/{r}/{v}/{doc.text}'
+            assert 'ax>' not in assert_txt, 'ax> found in "{assert_txt}"/{r}/{v}/{doc.text}'
 
         if len(dat) > 0:
             dat_max_hash = dat.max()
@@ -133,7 +133,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     # from long hash# to word (total ~5864 for twenty newsgroup example data)
     uniques = np.unique(data)
     assert attr == LOWER or attr == LEMMA
-    logger.info(f'Construct vocabulary with {attr}')
+    logger.info('Construct vocabulary with {attr}')
     vocab = {v: nlp.vocab[v].text for v in uniques if v != skip_uint64}
     vocab[skip_uint64] = '<SKIP>'
 

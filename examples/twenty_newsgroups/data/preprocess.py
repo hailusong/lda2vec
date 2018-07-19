@@ -6,6 +6,9 @@
 import pickle
 from sklearn.datasets import fetch_20newsgroups
 import numpy as np
+import os
+os.sys.path.append('../../../')
+
 from lda2vec import preprocess, Corpus
 from lda2vec.logging import logger
 from spacy.attrs import LEMMA
@@ -15,7 +18,7 @@ from spacy.attrs import LEMMA
 remove = ('headers', 'footers', 'quotes')
 texts = fetch_20newsgroups(subset='train', remove=remove).data
 # Remove tokens with these substrings
-bad = set(["ax>", '`@("', '---', '===', '^^^', '|||', '\\\\', '////', '%', '@', ':', '$'])
+bad = set(["ax>", '`@("', '---', '===', '~~~', '......', '=-=-=', '_____', '^^^', '|||', '\\\\', '////', '%', '@', ':', '$'])
 
 
 def clean(line):

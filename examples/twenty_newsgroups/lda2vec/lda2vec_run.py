@@ -5,6 +5,8 @@
 # and train an LDA-like model on it
 import os
 import os.path
+os.sys.path.append('../../../')
+
 import pickle
 import time
 import shelve
@@ -46,7 +48,7 @@ n_docs = doc_ids.max() + 1
 # Number of unique words in the vocabulary
 n_vocab = flattened.max() + 1
 # 'Strength' of the dircihlet prior; 200.0 seems to work well
-clambda = 200.0
+clambda = 2000.0
 
 # Number of topics to fit
 n_topics = int(os.getenv('n_topics', 20))

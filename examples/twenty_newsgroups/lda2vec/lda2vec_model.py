@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from lda2vec import EmbedMixture
 from lda2vec import dirichlet_likelihood
 from lda2vec.utils import move
@@ -50,7 +51,7 @@ class LDA2Vec(Chain):
         context = (F.dropout(doc, self.dropout_ratio) +
                    F.dropout(pivot, self.dropout_ratio))
 
-        for frame in range(-window, window + 1):
+        for frame in tqdm(range(-window, window + 1)):
             # Skip predicting the current pivot
             if frame == 0:
                 continue

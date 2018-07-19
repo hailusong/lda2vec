@@ -7,14 +7,17 @@
 ## Overview
 1. Word2vec - skip-gram
   - Pivot word -> context words
-  - Capture word-to-word relationship
+  - Capture word-to-word relationship<br>
+
   <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim00.gif" width=50%/>
 2. LDA
   - Document vector -> words in document
-  - Capture global relationship, not word-to-word relationship
+  - Capture global relationship, not word-to-word relationship<br>
+
     <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim01.gif" width=50%/>
 3. Lda2Vec
-  - Capture both global and local relationship at the same time
+  - Capture both global and local relationship at the same time<br>
+
     <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim02.gif" width=50%/>
 
 ## Implementations

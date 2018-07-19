@@ -16,6 +16,8 @@
 3. Lda2Vec<br>
   - Capture both global and local relationship at the same time<br>
     <img src="https://multithreaded.stitchfix.com/assets/posts/2016-05-27-lda2vec/anim02.gif" width=50%/><br>
+  - The training is to minimize the following loss (more details [here](https://github.com/TropComplique/lda2vec-pytorch#losshttps://github.com/TropComplique/lda2vec-pytorch#loss))<br>
+    <img src="https://github.com/TropComplique/lda2vec-pytorch/raw/master/loss.png" width=50%/><br>
 
 ## Implementations
 1. [Original cemoody/lda2vec](https://github.com/cemoody/lda2vec)

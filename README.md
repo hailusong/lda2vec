@@ -28,5 +28,5 @@
 | Issue | In which implementation | Solutions |
 | - | - | - |
 | Topic matrix all similar | - nateraw/Lda2vec-Tensorflow | - better pre-processing to remove rare words<br>- do LEMMA |
-| Negative Lda Loss | - nateraw/Lda2vec-Tensorflow<br>- meereeum/lda2vec-tf | positive it |
-| - Usually a lot of found topics are a total mess.<br>- the algorithm is prone to poor local minima.<br>- it greatly depends on values of initial topic assignments | TropComplique/lda2vec-pytorc | - do LEMMA<br>- Use vanilla LDA to initialize document's topic assignments<br> - use temperature to smoothen the initialization in the hope that lda2vec will have a chance to find better topic assignments.<br>- remove BOTH **rare** and **frequent** words |
+| Negative Lda Loss | - nateraw/Lda2vec-Tensorflow<br>- meereeum/lda2vec-tf | - positive it |
+| - Usually a lot of found topics are a total mess.<br>- the algorithm is prone to poor local minima.<br>- it greatly depends on values of initial topic assignments | - TropComplique/lda2vec-pytorc | - do LEMMA<br>- use vanilla LDA to initialize document's topic assignments<br> - use temperature to smoothen the initialization in the hope that lda2vec will have a chance to find better topic assignments.<br>- remove BOTH **rare** and **frequent** words |

@@ -36,11 +36,14 @@ fn_corpus = '{data_dir:s}/corpus.pkl'.format(data_dir=data_dir)
 fn_flatnd = '{data_dir:s}/flattened.npy'.format(data_dir=data_dir)
 fn_docids = '{data_dir:s}/doc_ids.npy'.format(data_dir=data_dir)
 fn_vectors = '{data_dir:s}/vectors.npy'.format(data_dir=data_dir)
+fn_docweights = '{data_dir:s}/doc_weights_init.npy'.format(data_dir=data_dir)
+
 vocab = pickle.load(open(fn_vocab, 'rb'))
 corpus = pickle.load(open(fn_corpus, 'rb'))
 flattened = np.load(fn_flatnd)
 doc_ids = np.load(fn_docids)
 vectors = np.load(fn_vectors)
+doc_weights_init = np.load(fn_docweights)
 
 # Model Parameters
 # Number of documents
@@ -48,7 +51,9 @@ n_docs = doc_ids.max() + 1
 # Number of unique words in the vocabulary
 n_vocab = flattened.max() + 1
 # 'Strength' of the dircihlet prior; 200.0 seems to work well
-clambda = 2000.0
+# clambda = 200.0
+# Hyperparams from https://github.com/TropComplique/lda2vec-pytorch/blob/master/20newsgroups/train.py
+clambda = 500.0
 
 # Number of topics to fit
 n_topics = int(os.getenv('n_topics', 20))
@@ -61,7 +66,10 @@ power = float(os.getenv('power', 0.75))
 pretrained = bool(int(os.getenv('pretrained', True)))
 
 # Sampling temperature
-temperature = float(os.getenv('temperature', 1.0))
+# Hyperparams from https://github.com/TropComplique/lda2vec-pytorch/blob/master/20newsgroups/train.py
+# Set default to 7.0.
+# temperature = float(os.getenv('temperature', 1.0))
+temperature = float(os.getenv('temperature', 7.0))
 
 # Number of dimensions in a single word vector
 n_units = int(os.getenv('n_units', 300))
@@ -90,7 +98,8 @@ for key in sorted(locals().keys()):
 
 model = LDA2Vec(n_documents=n_docs, n_document_topics=n_topics,
                 n_units=n_units, n_vocab=n_vocab, counts=term_frequency,
-                n_samples=15, power=power, temperature=temperature, vocab=words)
+                n_samples=15, power=power, temperature=temperature, vocab=words,
+                docu_initialW=doc_weights_init)
 if os.path.exists('lda2vec.hdf5'):
     print("Reloading from saved")
     serializers.load_hdf5("lda2vec.hdf5", model)
@@ -104,8 +113,17 @@ if gpu_id >= 0:
 else:
     model.to_cpu()
 
-optimizer = O.Adam()
+# Hyperparams from https://github.com/TropComplique/lda2vec-pytorch/blob/master/20newsgroups/train.py
+# optimizer = O.Adam()
 # optimizer = O.SGD()
+topics_lr=1e-3
+doc_weights_lr=1e-3
+word_vecs_lr=1e-3
+topics_weight_decay=1e-2
+# No weight decay in chainer 3.4
+# optimizer = O.Adam(alpha=topics_lr, weight_decay_rate=topics_weight_decay)
+optimizer = O.Adam(alpha=topics_lr)
+
 optimizer.setup(model)
 clip = chainer.optimizer.GradientClipping(5.0)
 optimizer.add_hook(clip)

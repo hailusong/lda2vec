@@ -14,9 +14,10 @@ class LDA2Vec(Chain):
     def __init__(self, n_documents=100, n_document_topics=10,
                  n_units=256, n_vocab=1000, dropout_ratio=0.5, train=True,
                  counts=None, n_samples=15, word_dropout_ratio=0.0,
-                 power=0.75, temperature=1.0, vocab=None):
+                 power=0.75, temperature=1.0, vocab=None, docu_initialW=None):
         em = EmbedMixture(n_documents, n_document_topics, n_units,
-                          dropout_ratio=dropout_ratio, temperature=temperature)
+                          dropout_ratio=dropout_ratio, temperature=temperature,
+                          docu_initialW=docu_initialW)
         kwargs = {}
         kwargs['mixture'] = em
         kwargs['sampler'] = L.NegativeSampling(n_units, counts, n_samples,

@@ -1,4 +1,5 @@
 import numpy as np
+import gensim
 
 import chainer
 import chainer.links as L
@@ -61,9 +62,8 @@ class EmbedMixture(chainer.Chain):
 
     .. seealso:: :func:`lda2vec.dirichlet_likelihood`
     """
-
     def __init__(self, n_documents, n_topics, n_dim, dropout_ratio=0.2,
-                 temperature=1.0):
+                 temperature=1.0, docu_initialW=None):
         self.n_documents = n_documents
         self.n_topics = n_topics
         self.n_dim = n_dim
@@ -71,8 +71,9 @@ class EmbedMixture(chainer.Chain):
         factors = _orthogonal_matrix((n_topics, n_dim)).astype('float32')
         factors /= np.sqrt(n_topics + n_dim)
 
-        document_weights = L.EmbedID(n_documents, n_topics)
+        document_weights = L.EmbedID(n_documents, n_topics, initialW=docu_initialW)
         logger.info('>>>>>{},{}'.format(n_documents, n_topics))
+
         super(EmbedMixture, self).__init__(
             # weights=L.Parameter(document_weights.W.data),
             weights=document_weights,

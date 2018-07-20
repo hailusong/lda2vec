@@ -58,6 +58,10 @@ class Corpus():
         """
         self.counts_loose = defaultdict(int)
         self._finalized = False
+
+        # special_items: after compacting:
+        # first <SKIP> (samller one, uint64 of -2) is SKIP, compact index is 0
+        # second <OOV> (bigger one, uint64 of -1) is OOV, compact index is 1
         self.specials = dict(out_of_vocabulary=np.uint64(out_of_vocabulary),
                              skip=np.uint64(skip))
 

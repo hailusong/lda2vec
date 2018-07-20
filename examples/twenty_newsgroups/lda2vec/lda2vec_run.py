@@ -176,11 +176,14 @@ for epoch in range(200):
         # optimizer.zero_grads()
         model.cleargrads()
 
-        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=False)
+        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=False, word2vec_only=epoch <= 5)
 
         prior = model.prior()
         loss = clambda * prior * fraction
-        loss.backward()
+
+        if epoch > 5:
+            loss.backward()
+
         optimizer.update()
 
         msg = ("J:{j:05d} E:{epoch:05d} L:{loss:1.3e} "

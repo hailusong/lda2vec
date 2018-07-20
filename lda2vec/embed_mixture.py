@@ -79,7 +79,7 @@ class EmbedMixture(chainer.Chain):
             weights=document_weights,
             factors=L.Parameter(factors))
         self.temperature = temperature
-        self.weights.W.data[...] /= np.sqrt(n_documents + n_topics)
+        # self.weights.W.data[...] /= np.sqrt(n_documents + n_topics)
 
     def __call__(self, doc_ids, update_only_docs=False):
         """ Given an array of document integer indices, returns a vector

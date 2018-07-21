@@ -1,8 +1,9 @@
 # Lda2Vec
 
 ## References
-1. [Original blog](https://multithreaded.stitchfix.com/blog/2016/05/27/lda2vec/#topic=38&lambda=1&term=)
-2. [LDA2vec: Word Embeddings in Topic Models](https://towardsdatascience.com/lda2vec-word-embeddings-in-topic-models-4ee3fc4b2843)
+1. [Original readme](README-original.rst)
+2. [Original blog](https://multithreaded.stitchfix.com/blog/2016/05/27/lda2vec/#topic=38&lambda=1&term=)
+3. [LDA2vec: Word Embeddings in Topic Models](https://towardsdatascience.com/lda2vec-word-embeddings-in-topic-models-4ee3fc4b2843)
 
 ## Overview
 1. Word2vec - skip-gram
@@ -32,3 +33,30 @@
 | Topic matrix all similar | - nateraw/Lda2vec-Tensorflow | - better pre-processing to remove rare words<br>- do LEMMA |
 | Negative Lda Loss | - nateraw/Lda2vec-Tensorflow<br>- meereeum/lda2vec-tf | - positive it |
 | - Usually a lot of found topics are a total mess.<br>- the algorithm is prone to poor local minima.<br>- it greatly depends on values of initial topic assignments | - TropComplique/lda2vec-pytorc | - do LEMMA<br>- use vanilla LDA to initialize document's topic assignments<br> - use temperature to smoothen the initialization in the hope that lda2vec will have a chance to find better topic assignments.<br>- remove BOTH **rare** and **frequent** words |
+
+### Trail and Error
+1. Use LEMMA
+  - Convert '-PRON-' to '<SKIP>'
+2. When doing NCE,
+  - replace all '<SKIP>' and OOV wtih chainer.NegativeSampling.ignore_label (-1)
+
+### Next Step
+1. We may request too much from a NCE model which is designed to build word-to-word relationship.
+   Now we expect the model do build all 3 relationship from one loss function:
+  - **word-to-word**: word vectors weights, in word vector space
+  - **document-to-topic**: document topic weights, in document topic proportion
+  - **topic-to-word**: topic weights in word vector space
+2. Given that we already have word-to-word relationship (loss minimized by GoogleNews word2vec),
+  - simply adding **word vec + context vec** and do the loss backward will naturally ...
+  - make the model push all topics in word vector space to the same point so that ...
+  - **context vec** won't intervene the original **word vec** setup, as such ...
+  - the model can enjoy the minimized loss already introduced by GoogleNews word2vec
+  - also if all topic vecs moved to the same point, it doesn't really matter the document weight proportion ...
+  - because the multiple result will be the same
+3. The better approach could be
+  - use fasttext to build **word vec** data from corpus (not from GoogleNews word2vec) so that ...
+  - we have a better minimized loss on word to word relationship
+  - do vanilla LDA on corpus, that is ...
+  - not to add **word vec** to **context vec**, just use **context vec** to globally predict ...
+  - all document words and apply loss backward which will ...
+  - update **document topic weights** and **topic weights**

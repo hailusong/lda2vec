@@ -110,16 +110,21 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
         # Second column is LIKE_EMAIL: yes/no, true/false
         # Third column is LIKE_URL: yes/no, true/false
         dat = doc.to_array([attr, LIKE_EMAIL, LIKE_URL])
+
+        if len(dat) > 0:
+            msg = 'Hash# {} should be reserved for the special token'.format(skip_uint64)
+            assert dat.max() < skip_uint64, msg
+
         for r, v in enumerate(dat[:, 0]):
             assert_txt = nlp.vocab[v].text
             assert 'ax>' not in assert_txt, 'ax> found in "{assert_txt}"/{r}/{v}/{doc.text}'
+            if assert_txt == '-PRON-':
+                logger.info('Changing {} id from {} to {}'.format(assert_txt, dat[r, 0], skip_uint64))
+                dat[r, 0] = skip_uint64
 
         if len(dat) > 0:
             dat_max_hash = dat.max()
             # logger.info('Max hash# detected is {}'.format(dat_max_hash))
-
-            msg = 'Hash# {} should be reserved for the special token'.format(skip_uint64)
-            assert dat.max() < skip_uint64, msg
 
             # Replace email and URL tokens with '<SKIP>' special token
             idx = (dat[:, 1] > 0) | (dat[:, 2] > 0)
@@ -133,7 +138,7 @@ def tokenize(texts, max_length, skip=-2, attr=LOWER, merge=False, nlp=None,
     # from long hash# to word (total ~5864 for twenty newsgroup example data)
     uniques = np.unique(data)
     assert attr == LOWER or attr == LEMMA
-    logger.info('Construct vocabulary with {attr}')
+    logger.info('Construct vocabulary with {}'.format(attr))
     vocab = {v: nlp.vocab[v].text for v in uniques if v != skip_uint64}
     vocab[skip_uint64] = '<SKIP>'
 

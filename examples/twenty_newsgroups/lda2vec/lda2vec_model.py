@@ -20,7 +20,13 @@ class LDA2Vec(Chain):
                           docu_initialW=docu_initialW)
         kwargs = {}
         kwargs['mixture'] = em
+
         # (Pdb) self.sampler.W.data.shape -> (4891, 300)
+        # (Pdb) n_units -> 300, embedding dimensions
+        # (Pdb) counts -> array([ 0,  0,  0, ..., 30, 30, 29], dtype=int32)
+        # (Pdb) counts.shape -> (4891,)
+        # (Pdb) len(vocab) -> 4891
+        # (Pdb) vocab[0] -> '<SKIP>', vocab[1] -> 'out_of_vocabulary',  vocab[2] -> '-PRON-'
         kwargs['sampler'] = L.NegativeSampling(n_units, counts, n_samples,
                                                power=power)
         super(LDA2Vec, self).__init__(**kwargs)
@@ -42,7 +48,9 @@ class LDA2Vec(Chain):
         return dl1
 
     def fit_partial(self, rdoc_ids, rword_indices, window=5,
-                    update_only_docs=False, word2vec_only=False):
+                    update_only_docs=False,
+                    word2vec_only=False,
+                    update_only_docs_topics=False):
         """ Compact indices of chunk words, from flattened
             (Pdb) len(rword_indices) -> 4096, batch size
             (Pdb) rword_indices.max() -> 4874, max word compact # in this chunk
@@ -51,6 +59,9 @@ class LDA2Vec(Chain):
             (Pdb) len(rdoc_ids) -> 4096, batch size
             (Pdb) rdoc_ids.max() -> 1660, max doc id in this chunk
         """
+
+        if update_only_docs_topics:
+            update_only_docs = False
 
         # Note that self.xp is module numpy. Function move uses following stmt
         # to convert both rdoc_ids and rword_indices as Chainer's Variable:
@@ -78,7 +89,7 @@ class LDA2Vec(Chain):
         # Note that we meed to adjust word2vec from GoogleNews as we never
         # train word2vec using twenty_newgroups so that the context words prediction
         # not work well at the begining
-        if update_only_docs:
+        if update_only_docs or update_only_docs_topics:
             pivot.unchain_backward()
 
         # (Pdb) window -> 5
@@ -97,15 +108,19 @@ class LDA2Vec(Chain):
         start, end = window, rword_indices.shape[0] - window
 
         # (Pdb) context.data.shape -> (4086, 300)
-        context = (F.dropout(doc, self.dropout_ratio) +
-                   F.dropout(pivot, self.dropout_ratio))
+        if not update_only_docs_topics:
+            context = (F.dropout(doc, self.dropout_ratio) +
+                       F.dropout(pivot, self.dropout_ratio))
+        else:
+            context = F.dropout(doc, self.dropout_ratio)
 
         # from -5 to 5, that is:
         # With given context vector (pivot wordvec + doc-topic_vec), predicts
-        # each target word in the window frame
+        # each target word in the window frame.
+        # Note that we do this for all words in the whole batch size.
         for frame in tqdm(range(-window, window + 1)):
             # Skip predicting the current pivot
-            if frame == 0:
+            if frame == 0 and not update_only_docs_topics:
                 continue
 
             # Predict word given context and pivot word
@@ -121,6 +136,10 @@ class LDA2Vec(Chain):
             # Word's document IDs
             doc_at_target = rdoc_ids[start + frame: end + frame]
 
+            # Since we flatten everything: all words from all different documents
+            # now in one array, we need to make sure we only predict words in the
+            # same document.
+            #
             # Note that doc_at_pivot is rdoc_ids[window/5: -window/4091],
             # And      doc_at_target is rdoc_ids[0: 4086] in the starting round
             #
@@ -128,12 +147,21 @@ class LDA2Vec(Chain):
             # (Pdb) len(doc_is_same) -> 4086
             doc_is_same = doc_at_target == doc_at_pivot
 
+            # Generate <SKIP>, OOV mask
+            mask_SKIP = targetidx != np.array([0])
+            mask_OOV = targetidx != np.array([1])
+            assert True in mask_SKIP and True in mask_OOV
+
+            # Generate drop-out mask
             # (Pdb) rand -> array([0.7982769 , 0.12706805, 0.77982534, ..., 0.69266078])
             rand = np.random.uniform(0, 1, doc_is_same.shape[0])
             # (Pdb) mask -> array([ True,  True,  True, ...,  True,  True,  True])
             mask = (rand > self.word_dropout_ratio).astype('bool')
+
             # (Pdb) weight -> array([1, 1, 1, ..., 1, 1, 1], dtype=int32)
-            weight = np.logical_and(doc_is_same, mask).astype('int32')
+            weight = np.logical_and(doc_is_same, mask)
+            weight = np.logical_and(weight, mask_SKIP)
+            weight = np.logical_and(weight, mask_OOV).astype('int32')
 
             # targetindex = target word indices
             # If weight is 1.0 then targetidx
@@ -142,7 +170,8 @@ class LDA2Vec(Chain):
             #
             # Note that this is skip-gram, from pivot word -> target context words
             # See NegativeSampling below for ignore label -1.
-            targetidx = targetidx * weight + -1 * (1 - weight)
+            chainer_nce_ignore_label = -1
+            targetidx = targetidx * weight + chainer_nce_ignore_label * (1 - weight)
             target, = move(self.xp, targetidx)
 
             # context, word_vec + docu-topic_vec, -> target words in context
@@ -160,10 +189,12 @@ class LDA2Vec(Chain):
             #       x, t, self.W, self.sampler.sample, self.sample_size,
             #       reduce='sum')
             # here:
-            # x (~chainer.Variable): Input of the weight matrix multiplication.
-            # t (~chainer.Variable): Batch of ground truth labels.
+            # context -> x (~chainer.Variable): Input of the weight matrix multiplication.
+            # target -> t (~chainer.Variable): Batch of ground truth labels.
+            # GoogleNews Embedding -> self.sampler.W.data
+            # L.NegativeSampling -> sampler
             #
-            # returns loss value
+            # returns loss value, sum of all losses on the whole batchsize data.
             #
             # Source (https://github.com/chainer/chainer/blob/v3.4.0/chainer/functions/loss/negative_sampling.py#L315)
             # NegativeSamplingFunction(function_node.FunctionNode):
@@ -171,10 +202,13 @@ class LDA2Vec(Chain):
             #       target as t -- self.sampler.W --> w
             #       context as x OP w --> loss
             # note that (Pdb) self.sampler.W.data.shape -> (4891, 300)
+            #
+            # DEBUG
+            # b chainer/functions/loss/negative_sampling.py:48
             loss = self.sampler(context, target)
             loss.backward()
 
-            if update_only_docs:
+            if update_only_docs or update_only_docs_topics:
                 # Wipe out any gradient accumulation on word vectors
                 # self.sampler.W.grad *= 0.0
                 self.sampler.W.cleargrad()

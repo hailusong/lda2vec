@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from collections import defaultdict
 import numpy as np
 import difflib
@@ -617,7 +618,14 @@ class Corpus():
 
         # We only keep the first top# words in corpus, in the desc-order of
         # term-frequency.
-        for compact in np.arange(top):
+        for compact in tqdm(np.arange(top)):
+            # not need vectors for special items
+            if compact == 0 or compact == 1:
+                s += 1
+                f += 1
+                data[compact, :] = None
+                continue
+
             # skipping those compact# not associated with long hash#, or
             # those long hash# not associated with any word in the our corpus vocabulary.
             # normally this should not happen.
@@ -653,6 +661,7 @@ class Corpus():
             # in GoogleNews vocabulary using our word (similiarity is mesured
             # in damerau_levenshtein_distance).
             if vector is None:
+                # logger.info('No match {} in GoogleNews - look for the most similiar'.format(word))
                 try:
                     # not required in Python3
                     # word = unicode(word)

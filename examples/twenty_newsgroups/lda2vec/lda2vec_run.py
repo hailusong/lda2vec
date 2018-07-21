@@ -107,6 +107,7 @@ if os.path.exists('lda2vec.hdf5'):
 if pretrained:
     logger.info('Use pre-trained Google word2vec')
     model.sampler.W.data[:, :] = vectors[:n_vocab, :]
+    np.nan_to_num(model.sampler.W.data, copy=False)
 
 if gpu_id >= 0:
     model.to_gpu()
@@ -170,18 +171,24 @@ for epoch in range(200):
     data['term_frequency'] = term_frequency
     np.savez('topics.pyldavis', **data)
 
+    word2vec_only = False
+    # word2vec_only = epoch <= 5:
+
     for d, f in utils.chunks(batchsize, doc_ids, flattened):
         t0 = time.time()
 
         # optimizer.zero_grads()
         model.cleargrads()
 
-        l = model.fit_partial(d.copy(), f.copy(), update_only_docs=False, word2vec_only=epoch <= 5)
+        l = model.fit_partial(d.copy(), f.copy(),
+                              update_only_docs=False,
+                              word2vec_only=word2vec_only,
+                              update_only_docs_topics=True)
 
         prior = model.prior()
         loss = clambda * prior * fraction
 
-        if epoch > 5:
+        if not word2vec_only:
             loss.backward()
 
         optimizer.update()

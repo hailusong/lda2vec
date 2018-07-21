@@ -36,9 +36,9 @@
 
 ### Trail and Error
 1. Use LEMMA
-  - Convert '-PRON-' to '<SKIP>'
+  - Convert '-PRON-' to '\<SKIP\>'
 2. When doing NCE,
-  - replace all '<SKIP>' and OOV wtih chainer.NegativeSampling.ignore_label (-1)
+  - replace all '\<SKIP\>' and OOV wtih chainer.NegativeSampling.ignore_label (-1)
 
 ### Next Step
 1. We may request too much from a NCE model which is designed to build word-to-word relationship.
@@ -51,8 +51,8 @@
   - make the model push all topics in word vector space to the same point so that ...
   - **context vec** won't intervene the original **word vec** setup, as such ...
   - the model can enjoy the minimized loss already introduced by GoogleNews word2vec
-  - also if all topic vecs moved to the same point, it doesn't really matter the document weight proportion ...
-  - because the multiple result will be the same
+  - also if all topic vecs moved to the same point, the document weight proportion no more matter  ...
+  - as the matmul result will be the same
 3. The better approach could be
   - use fasttext to build **word vec** data from corpus (not from GoogleNews word2vec) so that ...
   - we have a better minimized loss on word to word relationship

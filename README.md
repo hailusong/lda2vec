@@ -34,13 +34,13 @@
 | Negative Lda Loss | - nateraw/Lda2vec-Tensorflow<br>- meereeum/lda2vec-tf | - positive it |
 | - Usually a lot of found topics are a total mess.<br>- the algorithm is prone to poor local minima.<br>- it greatly depends on values of initial topic assignments | - TropComplique/lda2vec-pytorc | - do LEMMA<br>- use vanilla LDA to initialize document's topic assignments<br> - use temperature to smoothen the initialization in the hope that lda2vec will have a chance to find better topic assignments.<br>- remove BOTH **rare** and **frequent** words |
 
-### Trail and Error
+### Trail and Error #1
 1. Use LEMMA
   - Convert '-PRON-' to '\<SKIP\>'
 2. When doing NCE,
   - replace all '\<SKIP\>' and OOV wtih chainer.NegativeSampling.ignore_label (-1)
 
-### Next Step
+### Trail and Error #2
 1. We may request too much from a NCE model which is designed to build word-to-word relationship.
    Now we expect the model do build all 3 relationship from one loss function:
   - **word-to-word**: word vectors weights, in word vector space
@@ -60,3 +60,18 @@
   - not to add **word vec** to **context vec**, just use **context vec** to globally predict ...
   - all document words and apply loss backward which will ...
   - update **document topic weights** and **topic weights**
+
+### Next Step
+1. [Lda2vec intriguing though not _**very impressive**_ at the moment](http://nlpx.net/archives/330)
+  - Current lda2vec implementation to produce good output
+  - But it is not significantly better than the output of pure LDA
+2. **Thought #1** is to use word2vec to build word-to-word relationship, and then
+  - Run **k-means** to generate topic clusters in w2v space, then
+  - Modify **lda2vec** to only back-propagation on **document topic weights**
+  - Similar approach [LSA + k-means](Latent Semantic Analysis with K-Means)
+3. **Thought #2** is can we somehow make word2vec can also build global relationship?
+  - Like document-to-word, additional-attribute-to-word
+  - add document id and other attributes as _**prefix**_ to words, or
+4. Other though include
+  - Can we train the model on tagged document-topic corpus and then use the model to predict topics of a new document?
+  - The answer could be simple **text classification** using _**supervised fasttext**_

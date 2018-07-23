@@ -171,6 +171,7 @@ for epoch in range(200):
     data['term_frequency'] = term_frequency
     np.savez('topics.pyldavis', **data)
 
+    window_size = 5
     word2vec_only = False
     # word2vec_only = epoch <= 5:
 
@@ -181,9 +182,15 @@ for epoch in range(200):
         model.cleargrads()
 
         l = model.fit_partial(d.copy(), f.copy(),
+                              window=window_size,
                               update_only_docs=False,
                               word2vec_only=word2vec_only,
                               update_only_docs_topics=True)
+        pivot_doc_ids = d[window_size: -window_size]
+        if 0 not in pivot_doc_ids:
+            assert model.mixture.weights.W.grad[0].max() == 0, 'docu-id 0 not in pivot list however grad != 0'
+        if 1 not in pivot_doc_ids:
+            assert model.mixture.weights.W.grad[1].max() == 0, 'docu-id 0 not in pivot list however grad != 0'
 
         prior = model.prior()
         loss = clambda * prior * fraction

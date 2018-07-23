@@ -57,9 +57,16 @@
   - use fasttext to build **word vec** data from corpus (not from GoogleNews word2vec) so that ...
   - we have a better minimized loss on word to word relationship
   - do vanilla LDA on corpus, that is ...
-  - not to add **word vec** to **context vec**, just use **context vec** to globally predict ...
-  - all document words and apply loss backward which will ...
-  - update **document topic weights** and **topic weights**
+  - ~~not to add **word vec** to **context vec**, just use **context vec** to globally predict ...~~
+    * Not working as expected - all topic vecs got pushed to the same position in w2v space
+    * One possibility could be every word now need to predict a global context vec ...
+    * That will make the global context vec be <b>in the middle of w2v space</b>, same distance to </b>all words</b>
+    * However we have <b>11314</b> documents in <b>twenty newgroups</b>
+    * So we have <b>11314</b> context vecs for every word (~188 words/doc) in the same document to predict
+    * Another possibility is the <b>document topic-weights loss never decrease</b>, although gradients being applied
+    * <b>dirichlet_likelihood</b> issue?
+  - ~~all document words and apply loss backward which will ...~~
+  - ~~update **document topic weights** and **topic weights**~~
 
 ### Next Step
 1. [Lda2vec intriguing though not _**very impressive**_ at the moment](http://nlpx.net/archives/330)
